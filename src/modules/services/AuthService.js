@@ -35,16 +35,7 @@ const AuthService = {
         return response.data;
       });
   },
-  deliveryCities: function (country, restaurantId) {
-    return axios
-      .post(`/location/delivery`, {
-        lang: country,
-        restaurantId,
-      })
-      .then(response => {
-        return response.data;
-      });
-  },
+
   reset: function (email, password, code, country) {
     return axios
       .post(`/auth/change-password`, {

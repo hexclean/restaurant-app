@@ -343,7 +343,7 @@ export default CartDetail = props => {
     console.log('country = ', country);
     ProfileService.getDeliveryList(user.token, country)
       .then(response => {
-        dispatch(setLoading(false));
+        // dispatch(setLoading(false));
         if (response.status == 200) {
           setDeliveryList(response.result);
           if (!isEmpty(response.result)) {
@@ -397,7 +397,7 @@ export default CartDetail = props => {
 
     navi && getCities();
 
-    navi && logged && getDeliveryAddress();
+    // navi && logged && getDeliveryAddress();
 
     return () => console.log('Unmounted');
   }, [navi]);
@@ -815,7 +815,7 @@ export default CartDetail = props => {
       dispatch(setLoading(true));
       FoodService.getDownSellProducts('MFR0LE79KX', country)
         .then(response => {
-          dispatch(setLoading(false));
+          // dispatch(setLoading(false));
           if (response.status == 200) {
             setUpSellProducts(response.result);
           } else {
@@ -896,7 +896,7 @@ export default CartDetail = props => {
               </View>
             )}
             <View style={styles.amount}>
-              <Text style={styles.priceGrey}>
+              <Text style={styles.styles.priceBlack}>
                 {i18n.translate('Total')}: {total.toFixed(2)}{' '}
                 {i18n.translate('lei')}
               </Text>
@@ -1225,7 +1225,13 @@ export default CartDetail = props => {
                     onPress={() => setActive(!active)}>
                     <MapPinIcon />
                     <Text style={styles.itemText1} numberOfLines={1}>
-                      {cityObj.cities}
+                      {isEmpty(filterCitys)
+                        ? ''
+                        : filterCitys.filter(c => {
+                            return c.id == cityObj.id;
+                          }).length > 0
+                        ? cityObj.cities
+                        : filterCitys[0].cities}
                     </Text>
                     <Icon
                       type="material"
@@ -2531,6 +2537,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 18,
     color: '#111',
+  },
+  priceBlack: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.BLACK,
   },
 
   content1: {

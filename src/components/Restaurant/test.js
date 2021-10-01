@@ -1,17 +1,17 @@
-import React, {useState, useEffect, Fragment, useRef} from 'react';
+import React, {useState, useEffect, useRef, Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {Container, Content, Header} from 'native-base';
+import {Container, Header} from 'native-base';
 import {
   Platform,
   StatusBar,
   StyleSheet,
+  SafeAreaView,
   FlatList,
   View,
   Text,
-  TouchableOpacity,
   Animated,
   Image,
-  SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import {
   widthPercentageToDP as wp,
@@ -19,154 +19,72 @@ import {
 } from 'react-native-responsive-screen';
 import {Icon} from 'react-native-elements';
 import {setLoading} from '@modules/reducers/auth/actions';
-import {
-  setCartRestaurant,
-  setCartProducts,
-  setCartBadge,
-  setCartToast,
-} from '@modules/reducers/food/actions';
+import {setCartProducts, setCartBadge} from '@modules/reducers/food/actions';
 import {FoodService} from '@modules/services';
-import {isEmpty} from '@utils/functions';
+import {isEmpty, callOnceInInterval} from '@utils/functions';
+import {Menu, Information, Reviews} from '@components';
 import {common, colors} from '@constants/themes';
 import {RES_URL} from '@constants/configs';
+import {
+  BackWhiteIcon,
+  CartYellowIcon,
+  CartWhiteIcon,
+  CheckIcon,
+} from '@constants/svgs';
 import i18n from '@utils/i18n';
+
 import moment from 'moment';
-import {TextField} from 'react-native-material-textfield';
+import {TabView, TabBar} from 'react-native-tab-view';
 
 const HEADER_MAX_HEIGHT = Platform.OS === 'ios' ? 300 : 260;
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 110 : 60;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-const BOTTOM_BUTTON_DISTANCE = Platform.OS === 'ios' ? 40 : 26;
-
-const Required = ({required, index, quantity, onSelect}) => {
-  const [check, setCheck] = useState(false);
-
-  return (
-    <Fragment>
-      <TouchableOpacity
-        key={index}
-        style={styles.items}
-        onPress={() => {
-          setCheck(!check);
-          onSelect(!check, required, quantity);
-        }}>
-        <View style={styles.check}>
-          <Icon
-            type="material"
-            name={check ? 'radio-button-on' : 'radio-button-off'}
-            size={25}
-            color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
-          />
-          <Text style={{fontSize: 16}}>{required.extra_name}</Text>
-          {/* {!isEmpty(required.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {required.allergens_name.map((allergen, key) => (
-                            <Text key={`allergen${key}`} style={styles.allergen}>{allergen.allergen}{key != required.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
-        </View>
-        <Text style={styles.price}>
-          {(required.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
-        </Text>
-      </TouchableOpacity>
-    </Fragment>
-  );
-};
-
-const Optional = ({optional, index, quantity, onSelect}) => {
-  const [check, setCheck] = useState(false);
-
-  return (
-    <Fragment>
-      <TouchableOpacity
-        key={index}
-        style={styles.items}
-        onPress={() => {
-          setCheck(!check);
-          onSelect(!check, optional, quantity);
-        }}>
-        <View style={styles.check}>
-          <Icon
-            type="material-community"
-            name={check ? 'check-box-outline' : 'checkbox-blank-outline'}
-            size={25}
-            color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
-          />
-          <Text style={{fontSize: 16}}>{optional.extra_name}</Text>
-          {/* {!isEmpty(optional.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
-                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
-        </View>
-        <Text style={styles.price}>
-          {(optional.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
-        </Text>
-      </TouchableOpacity>
-    </Fragment>
-  );
-};
-
-const Sauce = ({sauce, index, quantity, onSelect}) => {
-  const [check, setCheck] = useState(false);
-
-  return (
-    <Fragment>
-      <TouchableOpacity
-        key={index}
-        style={styles.items}
-        onPress={() => {
-          setCheck(!check);
-          onSelect(!check, sauce, quantity);
-        }}>
-        <View style={styles.check}>
-          <Icon
-            type="material-community"
-            name={check ? 'check-box-outline' : 'checkbox-blank-outline'}
-            size={25}
-            color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
-          />
-          <Text style={{fontSize: 16}}>{sauce.extra_name}</Text>
-          {/* {!isEmpty(optional.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
-                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
-        </View>
-        <Text style={styles.price}>
-          {(sauce.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
-        </Text>
-      </TouchableOpacity>
-    </Fragment>
-  );
-};
-
-export default Extra = props => {
+export default Detail = props => {
   const dispatch = useDispatch();
-  const {country} = useSelector(state => state.auth);
-  const {cartRestaurant, cartProducts, cartBadge, cartToast} = useSelector(
+  const {country, user} = useSelector(state => state.auth);
+  const {filters, cartRestaurant, cartBadge, cartToast} = useSelector(
     state => state.food,
   );
 
-  const [restaurant] = useState(props.route.params.restaurant);
-  const [product] = useState(props.route.params.product);
-  const [quantity, setQuantity] = useState(props.route.params.count);
-  const [minRequired, setMinRequired] = useState(0);
-  const [requireds, setRequireds] = useState([]);
-  const [requiredList, setRequiredList] = useState([]);
-  const [requiredsAll, setRequiredsAll] = useState([]);
-  const [isShowRequireds, setIsShowRequireds] = useState(false);
+  const [index, setIndex] = React.useState(0);
+  const [routes] = React.useState([
+    {key: 'menu', title: i18n.translate('MENU')},
+    {key: 'info', title: i18n.translate('INFORMATION & PROMOTIONS')},
+    {key: 'third', title: i18n.translate('EVALUATION')},
+  ]);
 
-  const [optionals, setOptionals] = useState([]);
-  const [optionalList, setOptionalList] = useState([]);
-  const [optionalsAll, setOptionalsAll] = useState([]);
-  const [isShowOptionals, setIsShowOptionals] = useState(false);
-
-  const [sauces, setSauces] = useState([]);
-  const [sauceList, setSauceList] = useState([]);
-  const [saucesAll, setSaucesAll] = useState([]);
-  const [isShowSauces, setIsShowSauces] = useState(false);
-  const [comment, setComment] = useState('');
+  // const [restaurant, setRestaurant] = useState(props.route.params.restaurant);
+  const [restaurant, setRestaurant] = useState();
+  const [filterList, setFilterList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [category, setCategory] = useState({
+    category_id: 0,
+    category_name: '',
+  });
+  const [subCategories, setSubCategories] = useState([]);
+  const [subCategory, setSubCategory] = useState({
+    ordered: 0,
+    subcategoryId: 0,
+    propertyValTransId: 0,
+    subcategories_name: '',
+    index: 0,
+  });
+  const [information, setInformation] = useState({
+    restaurant_id: 0,
+    restaurant_avgTransport: 0,
+    restaurant_discount: 1,
+    restaurant_phoneNumber: '',
+    restaurant_address: '',
+    restaurant_description: '',
+  });
+  const [search, setSearch] = useState('');
+  const [rating, setRating] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [average, setAverage] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const [first, setFirst] = useState(false);
+  const [modal, setModal] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -180,491 +98,363 @@ export default Extra = props => {
     outputRange: [0, HEADER_MIN_HEIGHT],
     extrapolate: 'clamp',
   });
+  const headerBottomTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [1, HEADER_MAX_HEIGHT],
+    extrapolate: 'clamp',
+  });
   const headerTopTranslateY = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
     outputRange: [0, 0, 0],
     extrapolate: 'clamp',
   });
+  const titleTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [HEADER_SCROLL_DISTANCE / 2 - 30, 20],
+    extrapolate: 'clamp',
+  });
+  const titleOpacity = scrollY.interpolate({
+    inputRange: [0, 1],
+    outputRange: [10, 0],
+    extrapolate: 'clamp',
+  });
 
   useEffect(() => {
-    console.log(product);
-    const getRequired = () => {
-      dispatch(setLoading(true));
-      FoodService.required(
-        country,
-        restaurant.restaurant_id,
-        product.variant_id,
-      )
-        .then(response => {
-          // dispatch(setLoading(false));
-          if (response.status == 200) {
-            setMinRequired(response.minRequired);
-            setRequireds(response.result);
-            console.log(
-              'requireds length - ',
-              response.result.length,
-              response.result,
-            );
-
-            if (response.result.length <= 5) setRequiredsAll(response.result);
-            else {
-              let tmp = [];
-              for (var i = 0; i < 5; i++) {
-                tmp.push(response.result[i]);
-              }
-              setRequiredsAll(tmp);
-            }
-          }
-        })
-        .catch(error => {
-          dispatch(setLoading(false));
-        });
-    };
-    getRequired();
-
-    const getOptional = () => {
-      FoodService.optional(
-        country,
-        restaurant.restaurant_id,
-        product.variant_id,
-      )
-        .then(response => {
-          dispatch(setLoading(false));
-          if (response.status == 200) {
-            setOptionals(response.result);
-
-            if (response.result.length <= 5) setOptionalsAll(response.result);
-            else {
-              let tmp = [];
-              for (var i = 0; i < 5; i++) {
-                tmp.push(response.result[i]);
-              }
-              setOptionalsAll(tmp);
-            }
-          }
-        })
-        .catch(error => {
-          dispatch(setLoading(false));
-        });
-    };
-    getOptional();
-
-    const getSauce = () => {
-      FoodService.sauces(country, restaurant.restaurant_id, product.variant_id)
-        .then(response => {
-          dispatch(setLoading(false));
-          if (response.status == 200) {
-            setSauces(response.result);
-
-            if (response.result.length <= 5) setSaucesAll(response.result);
-            else {
-              let tmp = [];
-              for (var i = 0; i < 5; i++) {
-                tmp.push(response.result[i]);
-              }
-              setSaucesAll(tmp);
-            }
-          }
-        })
-        .catch(error => {
-          dispatch(setLoading(false));
-        });
-    };
-    getSauce();
+    dispatch(setLoading(true));
+    console.log(country, user.restaurantId);
+    FoodService.getRestaurantInfo(country, user.restaurantId)
+      .then(async response => {
+        dispatch(setLoading(false));
+        if (response.status == 200) {
+          console.log(response.result[0]);
+          setRestaurant(response.result[0]);
+        }
+      })
+      .catch(error => {
+        dispatch(setLoading(false));
+      });
   }, []);
 
   useEffect(() => {
-    if (isShowRequireds) {
-      setRequiredsAll(requireds);
-    } else {
-      if (requireds.length <= 5) setRequiredsAll(requireds);
-      else {
-        let tmp = [];
-        for (var i = 0; i < 5; i++) {
-          tmp.push(requireds[i]);
+    if (isEmpty(restaurant)) return;
+    var tempFilters = [];
+    if (filters.freeDelivery == 1)
+      tempFilters = [
+        ...tempFilters,
+        {filter: i18n.translate('No shipping costs')},
+      ];
+    if (filters.newest == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('News')}];
+    if (filters.pizza == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Pizza')}];
+    if (filters.hamburger == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Hamburger')}];
+    if (filters.dailyMenu == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Daily menu')}];
+    if (filters.soup == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Soup')}];
+    if (filters.salad == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Salat')}];
+    if (filters.money == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Cash')}];
+    if (filters.card == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Card')}];
+    if (filters.withinOneHour == 1)
+      tempFilters = [...tempFilters, {filter: i18n.translate('Within 1 hour')}];
+    setFilterList(tempFilters);
+    // dispatch(setLoading(true));
+    console.log(
+      '--category-- country = ',
+      country,
+      '  :  restaurant id = ',
+      restaurant.restaurant_id,
+    );
+    FoodService.categories(country, 'MFR0LE79KX')
+      .then(async response => {
+        if (response.status == 200) {
+          setCategories(response.result);
+          if (!isEmpty(response.result)) {
+            setCategory(response.result[0]);
+          }
         }
-        setRequiredsAll(tmp);
+      })
+      .catch(error => {
+        // dispatch(setLoading(false));
+      });
+    FoodService.information(country, 'MFR0LE79KX').then(response => {
+      if (response.status == 200) {
+        setInformation(response.result[0]);
       }
-    }
+    });
+  }, [restaurant]);
 
-    if (isShowOptionals) {
-      setOptionalsAll(optionals);
-    } else {
-      if (optionals.length <= 5) setOptionalsAll(optionals);
-      else {
-        let tmp = [];
-        for (var i = 0; i < 5; i++) {
-          tmp.push(optionals[i]);
+  useEffect(() => {
+    if (isEmpty(restaurant)) return;
+    // dispatch(setLoading(true));
+    if (category.category_id != 0) {
+      console.log(
+        '--subcategory-- country = ',
+        country,
+        '  :  restaurant id = ',
+        restaurant.restaurant_id,
+        '  :  category id = ',
+        category.category_id,
+      );
+      FoodService.subCategories(country, 'MFR0LE79KX', category.category_id)
+        .then(async response => {
+          // dispatch(setLoading(false));
+          if (response.status == 200) {
+            var data = [];
+            for (var i = 0; i < response.result.length; i++) {
+              data.push({
+                ordered: response.result[i].ordered,
+                subcategoryId: response.result[i].subcategoryId,
+                propertyValTransId: response.result[i].propertyValTransId,
+                subcategories_name: response.result[i].subcategories_name,
+                index: i,
+              });
+            }
+            setSubCategories(data);
+            if (!isEmpty(response.result)) {
+              if (
+                category.category_name === 'Daily Menu' ||
+                category.category_name === 'Daily menu' ||
+                category.category_name === 'Meniul Zilei' ||
+                category.category_name === 'Meniul zilei' ||
+                category.category_name === 'Napi Menü' ||
+                category.category_name === 'Napi menü'
+              ) {
+                var d = new Date();
+                var n = d.getDay();
+                setSubCategory({
+                  ordered: response.result[n === 0 ? 6 : n - 1].ordered,
+                  subcategoryId:
+                    response.result[n === 0 ? 6 : n - 1].subcategoryId,
+                  propertyValTransId:
+                    response.result[n === 0 ? 6 : n - 1].propertyValTransId,
+                  subcategories_name:
+                    response.result[n === 0 ? 6 : n - 1].subcategories_name,
+                  index: n === 0 ? 6 : n - 1,
+                });
+              } else {
+                setSubCategory({
+                  ordered: response.result[0].ordered,
+                  subcategoryId: response.result[0].subcategoryId,
+                  propertyValTransId: response.result[0].propertyValTransId,
+                  subcategories_name: response.result[0].subcategories_name,
+                  index: 0,
+                });
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.log('getting subcategory - ', error);
+          // dispatch(setLoading(false));
+        });
+    }
+  }, [category]);
+
+  useEffect(() => {
+    if (isEmpty(restaurant)) return;
+    // dispatch(setLoading(true));
+    FoodService.reviews('MFR0LE79KX', rating)
+      .then(async response => {
+        // dispatch(setLoading(false));
+        if (response.status == 200 && !isEmpty(response.result)) {
+          setReviews(response.result[0].ratings);
+          setAverage(response.result[0].AVGrating);
         }
-        setOptionalsAll(tmp);
-      }
-    }
+      })
+      .catch(error => {
+        // dispatch(setLoading(false));
+      });
+  }, [rating]);
 
-    if (isShowSauces) {
-      setSaucesAll(sauces);
+  useEffect(() => {
+    if (first) {
+      setVisible(true);
+      setTimeout(() => setVisible(false), 3000);
     } else {
-      if (sauces.length <= 5) setSaucesAll(sauces);
-      else {
-        let tmp = [];
-        for (var i = 0; i < 5; i++) {
-          tmp.push(sauces[i]);
-        }
-        setSaucesAll(tmp);
-      }
+      setFirst(true);
     }
-  }, [isShowRequireds, isShowOptionals, isShowSauces]);
+  }, [cartToast]);
 
-  const onSelect = (type, check, item, count) => {
-    if (type == 1) {
-      var requiredResult = requiredList.filter(required => {
-        return required.extra_id != item.extra_id;
-      });
-      if (check) {
-        setRequiredList([
-          ...requiredResult,
-          {
-            extra_id: item.extra_id,
-            extra_name: item.extra_name,
-            extra_minQuantity: count,
-            extra_price: item.extra_price,
-            extra_maxQuantity: item.extra_maxQuantity,
-            allergens_name: item.allergens_name,
-            extra_dash: count,
-          },
-        ]);
-      } else {
-        setRequiredList(requiredResult);
-      }
+  // useEffect(() => {
+  //     function getRestaurantInfo() {
+  //         console.log((new Date()).getMinutes() + " : " + (new Date()).getSeconds(), "  ==  get restaurant status");
+  //         FoodService.getRestaurantInfo(country, user.restaurantId)
+  //         .then(async (response) => {
+  //             dispatch(setLoading(false));
+  //             if (response.status == 200) {
+  //                 setRestaurant(response.result[0]);
+  //             }
+  //         })
+  //         .catch((error) => {
+  //             dispatch(setLoading(false));
+  //         });
+  //     }
 
-      console.log(requiredList.length, '  : minRequired = ', minRequired);
-    } else if (type == 2) {
-      var optionalResult = optionalList.filter(optional => {
-        return optional.extra_id != item.extra_id;
-      });
-      if (check) {
-        setOptionalList([
-          ...optionalResult,
-          {
-            extra_id: item.extra_id,
-            extra_name: item.extra_name,
-            extra_minQuantity: count,
-            extra_price: item.extra_price,
-            extra_maxQuantity: item.extra_maxQuantity,
-            allergens_name: item.allergens_name,
-            extra_dash: count,
-          },
-        ]);
-      } else {
-        setOptionalList(optionalResult);
-      }
-    } else if (type == 3) {
-      var sauceResult = sauceList.filter(sauce => {
-        return sauce.extra_id != item.extra_id;
-      });
-      if (check) {
-        setSauceList([
-          ...sauceResult,
-          {
-            extra_id: item.extra_id,
-            extra_name: item.extra_name,
-            extra_minQuantity: count,
-            extra_price: item.extra_price,
-            extra_maxQuantity: item.extra_maxQuantity,
-            allergens_name: item.allergens_name,
-            extra_dash: count,
-          },
-        ]);
-      } else {
-        setSauceList(sauceResult);
-      }
-    }
-  };
-
-  const onAdd = () => {
-    if (minRequired == requiredList.length) {
-      var extras = [];
-      requiredList.map((required, key) => {
-        extras.push({
-          id: required.extra_id,
-          quantity: quantity,
-          extraName: required.extra_name,
-          extraPrice: required.extra_price,
-          type: 'require',
-        });
-      });
-      optionalList.map((optional, key) => {
-        extras.push({
-          id: optional.extra_id,
-          quantity: quantity,
-          extraName: optional.extra_name,
-          extraPrice: optional.extra_price,
-          type: 'opt',
-        });
-      });
-      sauceList.map((sauce, key) => {
-        extras.push({
-          id: sauce.extra_id,
-          quantity: quantity,
-          extraName: sauce.extra_name,
-          extraPrice: sauce.extra_price,
-          type: 'opt',
-        });
-      });
-      console.log(extras);
-      var counter = cartProducts.length + 1;
-      cartProducts.push({
-        cartId: Date.now(),
-        variantId: product.variant_id,
-        productId: product.product_id,
-        productName: product.product_name,
-        productDescription: product.product_description,
-        allergens: product.allergens_name,
-        productPrice: product.product_price,
-        boxPrice: isEmpty(product.box_price) ? 0 : product.box_price,
-        quantity: quantity,
-        message: comment,
-        extras,
-        counter,
-      });
-      var totalBadge = 0;
-      cartProducts.map((cartProduct, key) => {
-        totalBadge += cartProduct.quantity;
-      });
-
-      console.log('+++++', restaurant);
-
-      dispatch(setCartRestaurant(restaurant));
-      dispatch(setCartProducts(cartProducts));
-      dispatch(setCartBadge(totalBadge));
-      // dispatch(setCartBadge(cartBadge + 1));
-      dispatch(setCartToast(!cartToast));
-      props.navigation.goBack();
-    }
-  };
+  //     const interval = setInterval(() => getRestaurantInfo(), 45000)
+  //     return () => {
+  //         clearInterval(interval);
+  //     }
+  // }, [])
 
   return (
     <SafeAreaView style={styles.saveArea}>
       <Animated.ScrollView
         contentContainerStyle={styles.content}
         scrollEventThrottle={16}
+        onScrollBeginDrag={() => setVisible(false)}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: true},
         )}>
-        <View
-          style={{
-            width: wp('100%'),
-            paddingHorizontal: 15,
-            paddingBottom: 15,
-            paddingTop: Platform.OS === 'ios' ? 0 : 10,
-            marginTop: Platform.OS === 'ios' ? -15 : 0,
-          }}>
-          <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-            {product.product_name}
-          </Text>
-          <Text style={{marginTop: 10, fontSize: 14}}>
-            {product.product_description}
-          </Text>
-          {!isEmpty(product.allergens_name) ? (
-            <Text style={styles.allergenList}>
-              ({i18n.translate('Allergens')}:{' '}
-              {product.allergens_name.map((allergen, key) => (
-                <Text key={key} style={styles.allergen}>
-                  {allergen.allergen_name}
-                  {key != product.allergens_name.length - 1 ? ', ' : ''}
+        <TabView
+          navigationState={{index, routes}}
+          swipeEnabled={Platform.OS === 'ios' ? true : false}
+          renderTabBar={props => (
+            <TabBar
+              {...props}
+              scrollEnabled={true}
+              style={styles.tabBar}
+              tabStyle={{width: 'auto'}}
+              indicatorStyle={styles.tabIndicator}
+              renderLabel={({route, focused}) => (
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {color: focused ? colors.YELLOW.PRIMARY : '#333'},
+                  ]}>
+                  {route.title}
                 </Text>
-              ))}
-              )
-            </Text>
-          ) : null}
-          {!isEmpty(requiredsAll) && (
-            <Text
-              style={{
-                marginTop: 30,
-                marginBottom: 20,
-                fontSize: 18,
-                fontWeight: 'bold',
-              }}
-              numberOfLines={1}>
-              {i18n.translate('Required extras (')}
-              {minRequired} {i18n.translate('is required)')}
-            </Text>
-          )}
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={requiredsAll}
-            keyExtractor={(required, index) => index.toString()}
-            renderItem={(required, index) => (
-              <Required
-                required={required.item}
-                index={index}
-                requiredList={requiredList}
-                quantity={quantity}
-                onSelect={(check, required, count) =>
-                  onSelect(1, check, required, count)
-                }
-              />
-            )}
-          />
-          {!isEmpty(requiredsAll) &&
-            requireds.length > 5 &&
-            (!isShowRequireds ? (
-              <TouchableOpacity
-                style={styles.showHideExtras}
-                onPress={() => setIsShowRequireds(true)}>
-                <Text style={styles.showHideExtrasText}>
-                  {i18n.translate('SHOW MORE')}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.showHideExtras}
-                onPress={() => setIsShowRequireds(false)}>
-                <Text style={styles.showHideExtrasText}>
-                  {i18n.translate('HIDE')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-
-          {!isEmpty(optionalsAll) && (
-            <Text
-              style={{
-                marginTop: 20,
-                marginBottom: 20,
-                fontSize: 18,
-                fontWeight: 'bold',
-              }}
-              numberOfLines={1}>
-              {i18n.translate('Optional extras (Not required)')}
-            </Text>
-          )}
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={optionalsAll}
-            keyExtractor={(optional, index) => index.toString()}
-            renderItem={(optional, index) => (
-              <Optional
-                optional={optional.item}
-                index={index}
-                optionalList={optionalList}
-                quantity={quantity}
-                onSelect={(check, optional, count) =>
-                  onSelect(2, check, optional, count)
-                }
-              />
-            )}
-          />
-          {!isEmpty(optionalsAll) &&
-            optionals.length > 5 &&
-            (!isShowOptionals ? (
-              <TouchableOpacity
-                style={styles.showHideExtras}
-                onPress={() => setIsShowOptionals(true)}>
-                <Text style={styles.showHideExtrasText}>
-                  {i18n.translate('SHOW MORE')}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.showHideExtras}
-                onPress={() => setIsShowOptionals(false)}>
-                <Text style={styles.showHideExtrasText}>
-                  {i18n.translate('HIDE')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-
-          {!isEmpty(saucesAll) && (
-            <Text
-              style={{
-                marginTop: 20,
-                marginBottom: 20,
-                fontSize: 18,
-                fontWeight: 'bold',
-              }}
-              numberOfLines={1}>
-              {i18n.translate('Sauce extras (Not required)')}
-            </Text>
-          )}
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={saucesAll}
-            keyExtractor={(sauce, index) => index.toString()}
-            renderItem={(sauce, index) => (
-              <Sauce
-                sauce={sauce.item}
-                index={index}
-                sauceList={sauceList}
-                quantity={quantity}
-                onSelect={(check, sauce, count) =>
-                  onSelect(3, check, sauce, count)
-                }
-              />
-            )}
-          />
-          {!isEmpty(saucesAll) &&
-            sauces.length > 5 &&
-            (!isShowSauces ? (
-              <TouchableOpacity
-                style={styles.showHideExtras}
-                onPress={() => setIsShowSauces(true)}>
-                <Text style={styles.showHideExtrasText}>
-                  {i18n.translate('SHOW MORE')}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.showHideExtras}
-                onPress={() => setIsShowSauces(false)}>
-                <Text style={styles.showHideExtrasText}>
-                  {i18n.translate('HIDE')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-
-          <Card key="review" style={styles.card}>
-            <View style={[common.flexRow, {marginTop: 10}]}>
-              <Text style={styles.labelText}>
-                {i18n.translate('Special requests')}
-              </Text>
-            </View>
-            <View style={[common.flexRow, {marginTop: 2}]}>
-              <Text style={styles.labelDesText}>
-                (
-                {i18n.translate(
-                  'Tell me if you have any allergies or if we need to omit any ingredients',
-                )}
-                )
-              </Text>
-            </View>
-            <TextField
-              keyboardType="default"
-              returnKeyType="next"
-              fontSize={16}
-              autoCorrect={false}
-              enablesReturnKeyAutomatically={true}
-              value={comment}
-              multiline={true}
-              height={85}
-              lineWidth={0}
-              activeLineWidth={0}
-              containerStyle={[styles.textContainer, common.borderColorGrey]}
-              inputContainerStyle={styles.inputContainer}
-              onChangeText={value => setComment(value)}
+              )}
             />
-          </Card>
-          <View style={{height: 150}}></View>
-        </View>
+          )}
+          renderScene={({route, jumpTo}) => {
+            switch (route.key) {
+              case 'menu':
+                return (
+                  <Menu
+                    jumpTo={jumpTo}
+                    restaurant={restaurant}
+                    categories={categories}
+                    category={category}
+                    subCategories={subCategories}
+                    subCategory={subCategory}
+                    search={search}
+                    onCategory={value => setCategory(value)}
+                    onSubCategory={value => setSubCategory(value)}
+                    // onSubCategory={(value) => console.log(value)}
+                    onSearch={value => {
+                      setSearch(value);
+                      console.log('set search - ', value);
+                    }}
+                    onExtra={(product, count) =>
+                      callOnceInInterval(() =>
+                        props.navigation.push('Extra', {
+                          restaurant,
+                          product,
+                          count,
+                        }),
+                      )
+                    }
+                    onCart={() => props.navigation.navigate('Cart')}
+                    onModal={() => setModal(true)}
+                  />
+                );
+              case 'info':
+                return (
+                  <Information information={information} jumpTo={jumpTo} />
+                );
+              case 'third':
+                return (
+                  <Reviews
+                    reviews={reviews}
+                    average={average}
+                    rating={rating}
+                    onRating={value => setRating(value)}
+                    jumpTo={jumpTo}
+                  />
+                );
+            }
+          }}
+          onIndexChange={setIndex}
+        />
+        <View style={{height: 50}} />
       </Animated.ScrollView>
+
       <Animated.View
         style={[styles.header, {transform: [{translateY: headerTranslateY}]}]}>
-        <Animated.Image
+        <Animated.View
           style={[
-            styles.headerBackground,
+            styles.headerBackgroundGrey,
             {transform: [{translateY: imageTranslateY}]},
           ]}
-          source={{uri: RES_URL + product.product_imageUrl}}
         />
+        {!isEmpty(restaurant) && (
+          <Animated.Image
+            style={[
+              styles.headerBackground,
+              {transform: [{translateY: imageTranslateY}]},
+            ]}
+            source={{uri: RES_URL + restaurant.restaurant_coverImage}}
+          />
+        )}
+        <Animated.View
+          style={[
+            styles.headerBottom,
+            {transform: [{translateY: headerBottomTranslateY}]},
+          ]}>
+          <View style={styles.avatar}>
+            {!isEmpty(restaurant) && (
+              <Image
+                style={styles.avatarView}
+                source={{uri: RES_URL + restaurant.restaurant_profileImage}}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+          <View>
+            <View style={styles.statusView}>
+              {!isEmpty(restaurant) && (
+                <View
+                  style={[
+                    styles.statusItem,
+                    parseInt(moment().format('HH:mm').replace(':', '')) <=
+                      parseInt(restaurant.restaurant_open.replace(':', '')) ||
+                    parseInt(moment().format('HH:mm').replace(':', '')) >=
+                      parseInt(restaurant.restaurant_close.replace(':', ''))
+                      ? styles.statusRed
+                      : styles.statusGreen,
+                  ]}>
+                  <Text style={styles.statusText}>
+                    {parseInt(moment().format('HH:mm').replace(':', '')) <=
+                      parseInt(restaurant.restaurant_open.replace(':', '')) ||
+                    parseInt(moment().format('HH:mm').replace(':', '')) >=
+                      parseInt(restaurant.restaurant_close.replace(':', ''))
+                      ? i18n.translate('CLOSED')
+                      : i18n.translate('OPEN')}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <FlatList
+              style={styles.typeList}
+              contentContainerStyle={styles.flatList}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              data={filterList}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={(item, index) => (
+                <TouchableOpacity key={index} style={styles.typeItem}>
+                  <Text style={styles.typeText}>{item.item.filter}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Animated.View>
       </Animated.View>
       <Animated.View
         style={[
@@ -673,60 +463,108 @@ export default Extra = props => {
         ]}>
         <Header style={styles.headerContent}>
           <View style={common.headerLeft}>
-            <TouchableOpacity onPress={() => props.navigation.goBack()}>
+            <TouchableOpacity
+              onPress={() => {
+                // setCityStatus(false);
+                props.navigation.openDrawer();
+              }}>
               <Icon
                 type="ionicon"
-                name="ios-close"
+                name="menu"
                 size={30}
                 color={colors.YELLOW.PRIMARY}
               />
             </TouchableOpacity>
           </View>
+          <Animated.View style={[{transform: [{translateY: titleTranslateY}]}]}>
+            {!isEmpty(restaurant) && (
+              <Text style={styles.headerTitle} numberOfLines={1}>
+                {restaurant.restaurant_name}
+              </Text>
+            )}
+            <Animated.View
+              style={[styles.headerMiddle, {opacity: titleOpacity}]}>
+              <View style={{height: 25}}>
+                {/* <Icon type='material' name='star-border' size={15} color={colors.YELLOW.PRIMARY} />
+                                <Text style={styles.headerRate}>{isEmpty(average) ? 0 : average}/5</Text> */}
+                <Text> </Text>
+              </View>
+            </Animated.View>
+          </Animated.View>
+          <View style={common.headerRight}>
+            <TouchableOpacity
+              onPress={() => {
+                props.navigation.navigate('Cart');
+              }}>
+              {cartBadge > 0 ? (
+                <Fragment>
+                  <CartYellowIcon />
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{cartBadge}</Text>
+                  </View>
+                </Fragment>
+              ) : (
+                <Fragment>
+                  {/* <CartWhiteIcon />
+                                        <View style={styles.badgeEmpty} /> */}
+                  <View />
+                </Fragment>
+              )}
+            </TouchableOpacity>
+          </View>
         </Header>
       </Animated.View>
-
-      <View style={styles.productCart}>
-        <View style={styles.cart}>
-          <TouchableOpacity
-            style={styles.countButton1}
-            disabled={quantity == 1}
-            onPress={() => quantity > 1 && setQuantity(quantity - 1)}>
-            <Icon
-              type="material-community"
-              name="minus"
-              color={colors.WHITE}
-              size={25}
-            />
-          </TouchableOpacity>
-          <View style={styles.count}>
-            <Text style={styles.countText}>{quantity} db</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.countButton2}
-            onPress={() => setQuantity(quantity + 1)}>
-            <Icon
-              type="material-community"
-              name="plus"
-              color={colors.WHITE}
-              size={25}
-            />
-          </TouchableOpacity>
-        </View>
+      {visible && (
         <TouchableOpacity
-          disabled={minRequired != requiredList.length}
-          style={[
-            styles.button,
-            {
-              backgroundColor:
-                minRequired != requiredList.length ? '#AAA' : '#F78F1E',
-            },
-          ]}
-          onPress={() => onAdd()}>
-          <Text style={styles.buttonText}>
-            {i18n.translate('Add to the cart')}
+          style={styles.toast}
+          onPress={() => setVisible(false)}>
+          <CheckIcon />
+          <Text style={styles.toastText}>
+            {i18n.translate('Product in the cart')}
           </Text>
         </TouchableOpacity>
-      </View>
+      )}
+      {modal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.overlay} />
+          <View style={styles.modalView}>
+            <View style={styles.modalMain}>
+              {!isEmpty(restaurant) && (
+                <Text style={styles.modalTitle}>
+                  {i18n.translate('You havent placed your order from the')}{' '}
+                  {restaurant.restaurant_name} {i18n.translate('yet')}
+                </Text>
+              )}
+              <Text style={styles.modalDescription}>
+                {i18n.translate('An order can only be from one restaurant')}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setModal(false);
+                setRestaurant(cartRestaurant);
+              }}>
+              <Text style={styles.saveText}>
+                {i18n.translate('Back to the')} {cartRestaurant.restaurant_name}{' '}
+                {i18n.translate('restaurant')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setModal(false);
+                // dispatch(setCartRestaurant(null));
+                dispatch(setCartBadge(0));
+                dispatch(setCartProducts([]));
+              }}>
+              <Text style={styles.cancelText}>
+                {i18n.translate('Empty cart add new product to the cart')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -735,7 +573,6 @@ const styles = StyleSheet.create({
   saveArea: {
     flex: 1,
     backgroundColor: colors.WHITE,
-    justifyContent: 'center',
   },
   header: {
     position: 'absolute',
@@ -841,150 +678,182 @@ const styles = StyleSheet.create({
     height: 90,
     width: 90,
   },
-  content: {
-    paddingTop: HEADER_MAX_HEIGHT,
-  },
-  allergenList: {
-    marginTop: 12,
-    width: '100%',
-    fontSize: 16,
-    color: '#999',
-  },
-  allergen: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#999',
-  },
-  items: {
-    width: wp('100%') - 40,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-
-  check: {
-    display: 'flex',
+  statusView: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    width: '65%',
+    marginTop: -35,
+    marginLeft: 20,
   },
-  item: {
-    width: wp('100%') - 70,
+  statusItem: {
+    marginRight: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: '#FEEBD6',
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: colors.WHITE,
   },
-  productCart: {
-    width: wp('100%'),
+  statusText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.WHITE,
+  },
+  statusGreen: {
+    backgroundColor: '#4ACC4F',
+  },
+  statusRed: {
+    backgroundColor: '#F05050',
+  },
+  typeList: {
+    marginTop: 20,
+    marginLeft: 20,
+    width: wp('100%') - 145,
+    height: 50,
+  },
+  flatList: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 25,
-    position: 'absolute',
-    bottom: 0,
-    paddingBottom: BOTTOM_BUTTON_DISTANCE,
-    paddingTop: 14,
-    paddingHorizontal: '5%',
+  },
+  typeItem: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: '#FEEBD6',
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  typeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.YELLOW.PRIMARY,
+  },
+  content: {
+    paddingTop: HEADER_MAX_HEIGHT - 32,
+  },
+  tabBar: {
+    paddingTop: Platform.OS == 'ios' ? -10 : 30,
     backgroundColor: colors.WHITE,
+    borderBottomWidth: 2,
+    borderBottomColor: '#C4C4C4',
+    elevation: 0,
+  },
+  tabIndicator: {
+    marginLeft: 10,
+    backgroundColor: colors.YELLOW.PRIMARY,
+    height: 3,
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  badge: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#FEEBD6',
+    backgroundColor: colors.YELLOW.PRIMARY,
+    marginTop: -30,
+    marginLeft: 15,
+  },
+  badgeEmpty: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 16,
+    height: 16,
+    marginTop: -30,
+    marginLeft: 15,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.WHITE,
+  },
+  toast: {
+    position: 'absolute',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    bottom: 0,
+    paddingLeft: 50,
+    width: wp('100%'),
+    height: 60,
+    backgroundColor: '#FEEBD6',
     shadowColor: colors.BLACK,
     shadowOffset: {width: 4, height: 10},
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 10,
   },
-  price: {
-    fontSize: 18,
+  toastText: {
+    marginLeft: 20,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: colors.YELLOW.PRIMARY,
-    width: '35%',
-    textAlign: 'right',
+    color: '#A42826',
   },
-  cart: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  count: {
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: wp('100%'),
+    height: hp('100%'),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    height: 30,
   },
-  countText: {
-    fontWeight: '700',
-    fontSize: 15,
+  overlay: {
+    position: 'absolute',
+    width: wp('100%'),
+    height: hp('100%'),
+    backgroundColor: '#00000080',
   },
-  countButton1: {
+  modalView: {
+    justifyContent: 'space-between',
+    width: wp('70%'),
+    height: 230,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 14,
+  },
+  modalMain: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    backgroundColor: '#F78F1E',
-    borderColor: colors.WHITE,
-  },
-  countButton2: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    backgroundColor: '#F78F1E',
-    borderColor: colors.WHITE,
-  },
-  card: {
-    width: '100%',
-    // padding: 10,
-  },
-  labelText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.BLACK,
-  },
-  labelDesText: {
-    fontSize: 14,
-    fontWeight: 'normal',
-    color: colors.BLACK,
-  },
-  textContainer: {
-    width: '100%',
-    marginTop: 10,
     height: 120,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingLeft: 15,
-    paddingRight: 20,
-    marginBottom: 100,
   },
-  inputContainer: {
-    marginTop: -20,
-    borderWidth: 0,
-    overflow: 'scroll',
-  },
-  button: {
-    width: '60%',
-    height: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '600',
+  modalTitle: {
+    width: '80%',
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: 'bold',
     color: colors.WHITE,
   },
-  showHideExtras: {
-    marginTop: 10,
-    borderTopWidth: 1,
-    borderColor: '#C4C4C4',
-    marginHorizontal: -20,
-  },
-  showHideExtrasText: {
+  modalDescription: {
+    width: '80%',
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 13,
+    color: colors.WHITE,
+  },
+  modalButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: 55,
+    borderTopWidth: 2,
+    borderTopColor: colors.BLACK,
+  },
+  saveText: {
+    width: '80%',
+    fontSize: 17,
     fontWeight: 'bold',
-    color: colors.YELLOW.PRIMARY,
-    padding: 8,
+    color: '#0AB4FF',
+    textAlign: 'center',
+  },
+  cancelText: {
+    width: '80%',
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#F05050',
+    textAlign: 'center',
   },
 });

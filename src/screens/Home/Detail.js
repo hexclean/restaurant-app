@@ -463,8 +463,17 @@ export default Detail = props => {
         ]}>
         <Header style={styles.headerContent}>
           <View style={common.headerLeft}>
-            <TouchableOpacity onPress={() => props.navigation.pop()}>
-              <BackWhiteIcon />
+            <TouchableOpacity
+              onPress={() => {
+                // setCityStatus(false);
+                props.navigation.openDrawer();
+              }}>
+              <Icon
+                type="ionicon"
+                name="menu"
+                size={30}
+                color={colors.YELLOW.PRIMARY}
+              />
             </TouchableOpacity>
           </View>
           <Animated.View style={[{transform: [{translateY: titleTranslateY}]}]}>
@@ -801,14 +810,14 @@ const styles = StyleSheet.create({
   modalView: {
     justifyContent: 'space-between',
     width: wp('70%'),
-    height: 230,
+    // height: 230,
     backgroundColor: '#1E1E1E',
     borderRadius: 14,
   },
   modalMain: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 120,
+    // height: 120
   },
   modalTitle: {
     width: '80%',
@@ -816,6 +825,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     color: colors.WHITE,
+    paddingTop: 15,
+    paddingBottom: 5,
   },
   modalDescription: {
     width: '80%',

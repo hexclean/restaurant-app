@@ -30,6 +30,7 @@ export default CartDeliveryAdd = props => {
   const dispatch = useDispatch();
   const {country, user} = useSelector(state => state.auth);
   const {deliveryStatus} = useSelector(state => state.profile);
+  const {cartRestaurant} = useSelector(state => state.food);
 
   const [type] = useState(props.route.params.type);
   const [addressId] = useState(
@@ -74,7 +75,6 @@ export default CartDeliveryAdd = props => {
           if (response.status == 200) {
             setCitys(response.location);
             setFilterCitys(response.location);
-            setFilterCitys(response.locations);
             if (props.route.params.type === 2) {
               var selectedCity = response.location.filter(checkCity);
               setCityObj(selectedCity[0]);
@@ -263,7 +263,13 @@ export default CartDeliveryAdd = props => {
             onPress={() => setActive(!active)}>
             <MapPinIcon />
             <Text style={styles.itemText} numberOfLines={1}>
-              {cityObj.cities}
+              {isEmpty(filterCitys)
+                ? ''
+                : filterCitys.filter(c => {
+                    return c.id == cityObj.id;
+                  }).length > 0
+                ? cityObj.cities
+                : filterCitys[0].cities}
             </Text>
             <Icon
               type="material"
