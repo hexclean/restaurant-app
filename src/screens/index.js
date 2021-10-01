@@ -28,42 +28,40 @@ import CouponCodes from '@screens/Profile/CouponCodes';
 
 import CartIndex from '@screens/Cart/CartIndex';
 import CartDetail from '@screens/Cart/CartDetail';
+import CartExtra from '@screens/Cart/CartExtra';
 
 import OrderIndex from '@screens/Order/OrderIndex';
 import OrderDetail from '@screens/Order/OrderDetail';
 import OrderSuccess from '@screens/Order/OrderSuccess';
 
 export {
-    Internet,
-    Languages,
-    Success,
-    Errors,
-
-    Start,
-    SignIn,
-    SignUp,
-    Forgot,
-    Reset,
-    Cities,
-
-    Home,
-    Detail,
-    Extra,
-
-    Profile,
-    DeliveryList,
-    DeliveryAdd,
-    ProfileEdit,
-    ProfileDelete,
-    ProfilePassword,
-    ReviewList,
-    ReviewAdd,
-    ReviewDelete,
-    CouponCodes,
-
-    CartIndex,
-    CartDetail,
-    OrderIndex,
-    OrderDetail,
-    OrderSuccess
-}
+  Internet,
+  Languages,
+  Success,
+  Errors,
+  Start,
+  SignIn,
+  SignUp,
+  Forgot,
+  Reset,
+  Cities,
+  Home,
+  Detail,
+  Extra,
+  Profile,
+  DeliveryList,
+  DeliveryAdd,
+  ProfileEdit,
+  ProfileDelete,
+  ProfilePassword,
+  ReviewList,
+  ReviewAdd,
+  ReviewDelete,
+  CouponCodes,
+  CartIndex,
+  CartDetail,
+  OrderIndex,
+  OrderDetail,
+  OrderSuccess,
+  CartExtra,
+};
