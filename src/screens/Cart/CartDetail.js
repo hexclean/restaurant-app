@@ -671,8 +671,14 @@ export default CartDetail = props => {
     setFilterText(text);
 
     const newCitys = citys.filter(item => {
-      const itemData = item.cities.toUpperCase();
-      const textData = text.toUpperCase();
+      const itemData = item.cities
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      const textData = text
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 
       return itemData.indexOf(textData) > -1;
     });
@@ -727,7 +733,10 @@ export default CartDetail = props => {
           {useNativeDriver: true},
         )}>
         {!success ? (
-          <View style={{flex: 1, paddingLeft: 20, paddingRight: 20}}>
+          <TouchableOpacity
+            style={{flex: 1, paddingLeft: 20, paddingRight: 20}}
+            activeOpacity={1}
+            onPress={() => setActive(false)}>
             <Text style={[styles.cartText, {marginTop: 10}]} numberOfLines={1}>
               {i18n.translate('Order complete')}
             </Text>
@@ -1268,7 +1277,7 @@ export default CartDetail = props => {
                   ]}>
                   {i18n.translate('Coupon Codes')}
                 </Text>
-                <Text
+                {/* <Text
                   style={[
                     styles.labelTextNormal1,
                     !isEmpty(errorCouponCode)
@@ -1277,7 +1286,7 @@ export default CartDetail = props => {
                   ]}>
                   {' '}
                   ({i18n.translate('If exist')})
-                </Text>
+                </Text> */}
               </View>
               <View style={styles.couponCodeContainer}>
                 <TextField
@@ -1405,19 +1414,21 @@ export default CartDetail = props => {
                 {i18n.translate('Cash')}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.radioButton}
-              onPress={() => setPayment(2)}>
-              <Icon
-                type="material"
-                name={payment == 2 ? 'radio-button-on' : 'radio-button-off'}
-                color={payment == 2 ? colors.YELLOW.PRIMARY : colors.BLACK}
-                size={20}
-              />
-              <Text style={styles.radioText} numberOfLines={1}>
-                {i18n.translate('Credit card at the courier')}
-              </Text>
-            </TouchableOpacity>
+            {restaurant.card == 1 && (
+              <TouchableOpacity
+                style={styles.radioButton}
+                onPress={() => setPayment(2)}>
+                <Icon
+                  type="material"
+                  name={payment == 2 ? 'radio-button-on' : 'radio-button-off'}
+                  color={payment == 2 ? colors.YELLOW.PRIMARY : colors.BLACK}
+                  size={20}
+                />
+                <Text style={styles.radioText} numberOfLines={1}>
+                  {i18n.translate('Credit card at the courier')}
+                </Text>
+              </TouchableOpacity>
+            )}
             {!logged && (
               <TouchableOpacity
                 style={styles.rememberMe}
@@ -1450,7 +1461,7 @@ export default CartDetail = props => {
                 </Text>
               </TouchableOpacity>
             )}
-            {!logged && (
+            {/* {!logged && (
               <TouchableOpacity
                 style={styles.rememberMe}
                 onPress={() => setPrivacy(!privacy)}>
@@ -1477,9 +1488,9 @@ export default CartDetail = props => {
                   </Text>
                 </Text>
               </TouchableOpacity>
-            )}
+            )} */}
             <View style={{height: 160}}></View>
-          </View>
+          </TouchableOpacity>
         ) : (
           <View style={styles.success}>
             <View style={common.height50} />
@@ -1610,7 +1621,7 @@ export default CartDetail = props => {
                 ? (total + (total > freeDelivery ? 0 : deliveryPrice)).toFixed(
                     2,
                   )
-                : finalPrice.toFixedF(2)}{' '}
+                : finalPrice.toFixed(2)}
               {i18n.translate('lei')}
             </Text>
           </View>
@@ -1670,7 +1681,7 @@ export default CartDetail = props => {
                   finalPrice < minimumOrderPrice ||
                   !validateBetween(comment, 0, 300) ||
                   !termOfService ||
-                  !privacy ||
+                  // !privacy ||
                   errorPhone ||
                   errorName ||
                   isEmpty(phone) ||
@@ -1692,7 +1703,7 @@ export default CartDetail = props => {
                   finalPrice < minimumOrderPrice ||
                   !validateBetween(comment, 0, 300) ||
                   !termOfService ||
-                  !privacy ||
+                  // !privacy ||
                   errorPhone ||
                   errorName ||
                   isEmpty(phone) ||
@@ -1978,7 +1989,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#FEEBD6',
-    backgroundColor: '#F78F1E',
+    backgroundColor: colors.YELLOW.PRIMARY,
     marginTop: -30,
     marginLeft: 15,
   },
@@ -2091,7 +2102,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
-    backgroundColor: colors.YELLOW.PRIMARY,
+    backgroundColor: '#F78F1E',
   },
   button: {
     marginBottom: 20,

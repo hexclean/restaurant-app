@@ -488,6 +488,7 @@ export default Extra = props => {
               onChangeText={value => setComment(value)}
             />
           </Card>
+          <View style={{height: 150}}></View>
         </View>
       </Animated.ScrollView>
       <Animated.View

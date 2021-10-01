@@ -1,6 +1,6 @@
-import React, { useState, useEffect, Fragment } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { Container } from "native-base";
+import React, {useState, useEffect, Fragment} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import {Container} from 'native-base';
 import {
   Platform,
   StatusBar,
@@ -10,29 +10,29 @@ import {
   TouchableOpacity,
   TouchableHighlight,
   ScrollView,
-} from "react-native";
+} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { Icon } from "react-native-elements";
-import { setCity, setUser } from "@modules/reducers/auth/actions";
-import { AuthService } from "@modules/services";
-import { isEmpty } from "@utils/functions";
-import { common, colors } from "@constants/themes";
-import { MapPinIcon } from "@constants/svgs";
-import i18n from "@utils/i18n";
+} from 'react-native-responsive-screen';
+import {Icon} from 'react-native-elements';
+import {setCity, setUser} from '@modules/reducers/auth/actions';
+import {AuthService} from '@modules/services';
+import {isEmpty} from '@utils/functions';
+import {common, colors} from '@constants/themes';
+import {MapPinIcon} from '@constants/svgs';
+import i18n from '@utils/i18n';
 
-export default Cities = (props) => {
+export default Cities = props => {
   const dispatch = useDispatch();
-  const { country, logged, user } = useSelector((state) => state.auth);
+  const {country, logged, user} = useSelector(state => state.auth);
 
   const [active, setActive] = useState(false);
   const [citys, setCitys] = useState([]);
   const [visible, setVisible] = useState(false);
   const [cityObj, setCityObj] = useState({
     id: 0,
-    cities: i18n.translate("Choose a city"),
+    cities: i18n.translate('Choose a city'),
   });
   const [cityStatus, setCityStatus] = useState(false);
 
@@ -40,20 +40,20 @@ export default Cities = (props) => {
     props.onLoading(true);
     const getCities = () => {
       AuthService.citiesRes(country)
-        .then((response) => {
+        .then(response => {
           props.onLoading(false);
           if (response.status == 200) {
             setCitys(response.locations);
           }
         })
-        .catch((error) => {
+        .catch(error => {
           props.onLoading(false);
         });
     };
     getCities();
 
     return () => {
-      console.log("cities will be unmount");
+      console.log('cities will be unmount');
     };
   }, []);
 
@@ -62,18 +62,16 @@ export default Cities = (props) => {
       style={styles.container}
       activeOpacity={0.2}
       underlayColor={colors.WHITE}
-      onPress={() => setActive(false)}
-    >
+      onPress={() => setActive(false)}>
       <Fragment>
         <View style={styles.content}>
           <View style={styles.inputView}>
             <Text style={styles.labelText}>
-              {i18n.translate("Where are you looking for a restaurant")}
+              {i18n.translate('Where are you looking for a restaurant')}
             </Text>
             <TouchableOpacity
               style={styles.textContainer}
-              onPress={() => setActive(!active)}
-            >
+              onPress={() => setActive(!active)}>
               <MapPinIcon />
               <Text style={styles.itemText} numberOfLines={1}>
                 {cityObj.cities}
@@ -88,9 +86,12 @@ export default Cities = (props) => {
           </View>
           {active ? (
             <ScrollView
-              style={!isEmpty(citys) && citys.length > 5 ? styles.listViewheight : styles.listView}
-              keyboardShouldPersistTaps="handled"
-            >
+              style={
+                !isEmpty(citys) && citys.length > 5
+                  ? styles.listViewheight
+                  : styles.listView
+              }
+              keyboardShouldPersistTaps="handled">
               {!isEmpty(citys) &&
                 citys.map((cityOne, key) => (
                   <TouchableOpacity
@@ -103,8 +104,7 @@ export default Cities = (props) => {
                       setActive(false);
                       setCityObj(cityOne);
                       setCityStatus(true);
-                    }}
-                  >
+                    }}>
                     <Text style={styles.itemText} numberOfLines={1}>
                       {cityOne.cities}
                     </Text>
@@ -114,35 +114,43 @@ export default Cities = (props) => {
           ) : (
             <View style={styles.inputView}>
               <Text style={styles.searchLabel}>
-                {i18n.translate("Quick search:")}
+                {i18n.translate('Quick search:')}
               </Text>
               <View style={styles.searchView}>
                 {!isEmpty(citys) ? (
-                  <Fragment>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setCityObj(citys[0]);
-                        setVisible(true);
-                        setCityStatus(true);
-                      }}
-                    >
-                      <Text style={styles.searchText}>{citys[0].cities}</Text>
-                    </TouchableOpacity>
-                    {/* <TouchableOpacity onPress={() => {
-                                                setCityObj(citys[1]);
-                                                setVisible(true);
-                                                setCityStatus(true);
-                                            }}>
-                                                <Text style={styles.searchText}>{citys[1].cities}</Text>
-                                            </TouchableOpacity> */}
-                    {/* <TouchableOpacity onPress={() => {
-                                                setCityObj(citys[2]);
-                                                setVisible(true);
-                                                setCityStatus(true);
-                                            }}>
-                                                <Text style={styles.searchText}>{citys[2].cities}</Text>
-                                            </TouchableOpacity> */}
-                  </Fragment>
+                  citys.length > 1 ? (
+                    <Fragment>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setCityObj(citys[0]);
+                          setVisible(true);
+                          setCityStatus(true);
+                        }}>
+                        <Text style={styles.searchText}>
+                          {citys[0].cities},
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setCityObj(citys[1]);
+                          setVisible(true);
+                          setCityStatus(true);
+                        }}>
+                        <Text style={styles.searchText}>{citys[1].cities}</Text>
+                      </TouchableOpacity>
+                    </Fragment>
+                  ) : (
+                    <Fragment>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setCityObj(citys[0]);
+                          setVisible(true);
+                          setCityStatus(true);
+                        }}>
+                        <Text style={styles.searchText}>{citys[0].cities}</Text>
+                      </TouchableOpacity>
+                    </Fragment>
+                  )
                 ) : null}
               </View>
             </View>
@@ -163,7 +171,7 @@ export default Cities = (props) => {
                       id: cityObj.id,
                       name: cityObj.cities,
                       status: false,
-                    })
+                    }),
                   )
                 : dispatch(
                     setUser({
@@ -175,13 +183,12 @@ export default Cities = (props) => {
                         name: cityObj.cities,
                         status: false,
                       },
-                    })
+                    }),
                   );
               props.onSave();
-            }}
-          >
+            }}>
             <Text style={[common.buttonText, common.fontColorWhite]}>
-              {i18n.translate("Save")}
+              {i18n.translate('Save')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -196,7 +203,7 @@ export default Cities = (props) => {
                       id: cityObj.id,
                       name: cityObj.cities,
                       status: false,
-                    })
+                    }),
                   )
                 : dispatch(
                     setUser({
@@ -208,7 +215,7 @@ export default Cities = (props) => {
                         name: cityObj.cities,
                         status: false,
                       },
-                    })
+                    }),
                   );
               props.onSave();
             }}
@@ -220,26 +227,26 @@ export default Cities = (props) => {
   );
 };
 
-const SaveModal = (props) => {
+const SaveModal = props => {
   return (
     <View style={styles.modalContainer}>
       <View style={styles.overlay} />
       <View style={styles.modalView}>
         <View style={styles.modalMain}>
           <Text style={styles.modalTitle}>
-            {i18n.translate("Did you mean this city")}: {props.cityObj.cities}?
+            {i18n.translate('Did you mean this city')}: {props.cityObj.cities}?
           </Text>
           <Text style={styles.modalDescription}>
             {i18n.translate(
-              "You can edit the city later by clicking on the city in header"
+              'You can edit the city later by clicking on the city in header',
             )}
           </Text>
         </View>
         <TouchableOpacity style={styles.modalButton} onPress={props.onSave}>
-          <Text style={styles.saveText}>{i18n.translate("Save")}</Text>
+          <Text style={styles.saveText}>{i18n.translate('Save')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.modalButton} onPress={props.onCancel}>
-          <Text style={styles.cancelText}>{i18n.translate("Cancel")}</Text>
+          <Text style={styles.cancelText}>{i18n.translate('Cancel')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -256,15 +263,15 @@ const styles = StyleSheet.create({
   },
   inputView: {
     marginTop: 20,
-    width: "100%",
+    width: '100%',
   },
   itemText: {
-    width: "75%",
+    width: '75%',
     fontSize: 16,
-    textAlign: "left",
+    textAlign: 'left',
   },
   listView: {
-    width: "100%",
+    width: '100%',
     // height: 250,
     paddingHorizontal: 10,
     backgroundColor: colors.WHITE,
@@ -276,7 +283,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   listViewheight: {
-    width: "100%",
+    width: '100%',
     height: 250,
     paddingHorizontal: 10,
     backgroundColor: colors.WHITE,
@@ -288,7 +295,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   itemView: {
-    width: "100%",
+    width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
@@ -298,13 +305,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   labelView: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   labelText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: colors.BLACK,
   },
   searchLabel: {
@@ -312,25 +319,25 @@ const styles = StyleSheet.create({
     color: colors.BLACK,
   },
   searchView: {
-    width: "100%",
-    flexWrap: "wrap",
+    width: '100%',
+    flexWrap: 'wrap',
     marginVertical: 10,
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   searchText: {
     marginRight: 10,
     marginBottom: 5,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: colors.YELLOW.PRIMARY,
   },
   textContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
     marginTop: 10,
     height: 50,
     borderWidth: 1,
@@ -339,67 +346,67 @@ const styles = StyleSheet.create({
     borderColor: colors.GREY.PRIMARY,
   },
   modalContainer: {
-    position: "absolute",
+    position: 'absolute',
     top: -108,
-    width: wp("100%"),
-    height: hp("100%"),
-    justifyContent: "center",
-    alignItems: "center",
+    width: wp('100%'),
+    height: hp('100%'),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlay: {
-    position: "absolute",
-    width: wp("100%"),
-    height: hp("100%"),
-    backgroundColor: "#00000080",
+    position: 'absolute',
+    width: wp('100%'),
+    height: hp('100%'),
+    backgroundColor: '#00000080',
   },
   modalView: {
-    justifyContent: "space-between",
-    width: wp("70%"),
+    justifyContent: 'space-between',
+    width: wp('70%'),
     height: 200,
-    backgroundColor: "rgba(30, 30, 30, 0.75)",
+    backgroundColor: 'rgba(30, 30, 30, 0.75)',
     borderRadius: 14,
   },
   modalMain: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     height: 110,
   },
   modalTitle: {
-    width: "80%",
-    textAlign: "center",
+    width: '80%',
+    textAlign: 'center',
     fontSize: 17,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: colors.WHITE,
   },
   modalDescription: {
-    width: "80%",
-    textAlign: "center",
+    width: '80%',
+    textAlign: 'center',
     fontSize: 13,
     color: colors.WHITE,
   },
   modalButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
     height: 45,
     borderTopWidth: 2,
-    borderTopColor: "#1E1E1E",
+    borderTopColor: '#1E1E1E',
   },
   saveText: {
     fontSize: 17,
-    fontWeight: "bold",
-    color: "#0AB4FF",
+    fontWeight: 'bold',
+    color: '#0AB4FF',
   },
   cancelText: {
     fontSize: 17,
-    fontWeight: "bold",
-    color: "#F05050",
+    fontWeight: 'bold',
+    color: '#F05050',
   },
   buttonView: {
-    position: "absolute",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
     bottom: 50,
   },
 });

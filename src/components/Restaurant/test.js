@@ -1,274 +1,309 @@
-import React, {useState, useEffect, Fragment} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
-import {Container, Header} from 'native-base';
-import {
-  Platform,
-  StatusBar,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import {Icon} from 'react-native-elements';
-import {setLoading} from '@modules/reducers/auth/actions';
-import {setFilters} from '@modules/reducers/food/actions';
-import {FoodService} from '@modules/services';
-import {Cities, Dashboard, Filters} from '@components';
-import {common, colors} from '@constants/themes';
-import {CartYellowIcon} from '@constants/svgs';
-import i18n from '@utils/i18n';
-import {callOnceInInterval} from '@utils/functions';
+import axios, {setClientToken, removeClientToken} from '@utils/axios';
+import {isEmpty} from '@utils/functions';
 
-export default Home = props => {
-  const dispatch = useDispatch();
-  const {logged, country, city, user} = useSelector(state => state.auth);
-  const {cartBadge, filters} = useSelector(state => state.food);
-
-  const [cityStatus, setCityStatus] = useState(false);
-  const [filterStatus, setFilterStatus] = useState(false);
-  const [promotion, setPromotion] = useState([]);
-  const [popular, setPopular] = useState([]);
-  const [result, setResult] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-  const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    setCityStatus(false);
-    setFilterStatus(false);
-    dispatch(setLoading(true));
-    console.log('index home = ', logged ? user.city.name : city.name);
-    FoodService.promotion(country, logged ? user.city.name : city.name)
+const FoodService = {
+  promotion: function (country, cityName) {
+    console.log('country - ', country, ' == cityName = ', cityName);
+    return axios
+      .get(`/location/promotion/${country}/${cityName}`)
       .then(response => {
-        setRefresh(false);
-        if (response.status == 200) {
-          setPromotion(response.result);
-        }
-      })
-      .catch(error => {
-        setRefresh(false);
+        return response.data;
       });
-    // FoodService.popular(country, logged ? user.city.name : city.name)
-    //     .then((response) => {
-    //         setRefresh(false);
-    //         if (response.status == 200) {
-    //             setPopular(response.result);
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         setRefresh(false);
-    //     });
-    FoodService.all(
-      country,
-      logged ? user.city.name : city.name,
-      search,
+  },
+  popular: function (country, cityName) {
+    return axios
+      .get(`/location/popular/${country}/${cityName}`)
+      .then(response => {
+        return response.data;
+      });
+  },
+  all: function (country, cityName) {
+    return axios.get(`/location/${country}/${cityName}`).then(response => {
+      return response.data;
+    });
+  },
+  result: function (country, cityName, search, filters) {
+    console.log({
+      lang: country,
+      location: cityName,
+      searchString: search,
       filters,
-    )
+    });
+    return axios
+      .post(`/location/home/search`, {
+        lang: country,
+        location: cityName,
+        searchString: search,
+        filters,
+      })
       .then(response => {
-        dispatch(setLoading(false));
-        setRefresh(false);
-        if (response.status == 200) {
-          setResult(response.result);
-        }
+        return response.data;
+      });
+  },
+
+  categories: function (country, restaurantId) {
+    return axios
+      .post(`/product/category`, {
+        restaurantId,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+  subCategories: function (country, restaurantId, categoryId) {
+    return axios
+      .post(`/product/subcategories`, {
+        restaurantId,
+        lang: country,
+        categoryId,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+  products: function (
+    country,
+    restaurantId,
+    categoryId,
+    subcategoryId,
+    propertyValTransId,
+    searchedProduct,
+  ) {
+    console.log({
+      restaurantId,
+      lang: country,
+      subcategoryId,
+      propertyValTransId,
+      categoryId,
+      searchProduct: searchedProduct,
+    });
+    return axios
+      .post(`/product/subcategories-products`, {
+        restaurantId,
+        lang: country,
+        subcategoryId,
+        propertyValTransId,
+        categoryId,
+        searchProduct: searchedProduct,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+  information: function (country, restaurantName) {
+    return axios
+      .get(`/restaurant/info/${country}/${restaurantName}`)
+      .then(response => {
+        return response.data;
+      });
+  },
+  reviews: function (restaurantName, rating) {
+    return axios
+      .post(`/restaurant/review-list`, {
+        restaurantName,
+        rating,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+
+  required: function (country, restaurantId, variantId) {
+    return axios
+      .post(`/product/required-extra`, {
+        restaurantId,
+        lang: country,
+        variantId,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+
+  optional: function (country, restaurantId, variantId) {
+    console.log(country, restaurantId, variantId);
+    return axios
+      .post(`/product/optional-extra`, {
+        restaurantId,
+        lang: country,
+        variantId,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+
+  getOrders: function (token) {
+    setClientToken(token);
+    return axios.get(`/order`).then(response => {
+      removeClientToken();
+      return response.data;
+    });
+  },
+
+  getOrder: function (token, country, orderId) {
+    setClientToken(token);
+    console.log('order status = ', country, orderId);
+    return axios.get(`/order/${country}/${orderId}`).then(response => {
+      removeClientToken();
+      return response.data;
+    });
+  },
+
+  order: function (
+    token,
+    city,
+    deliveryAddressId,
+    restaurantId,
+    take,
+    cutlery,
+    products,
+    comment,
+    deliveryPrice,
+    country,
+    payment,
+  ) {
+    setClientToken(token);
+
+    var totalPrice = 0;
+
+    products.map((cartProduct, key) => {
+      totalPrice += cartProduct.quantity * cartProduct.productPrice;
+
+      totalPrice += cartProduct.quantity * cartProduct.boxPrice;
+
+      cartProduct.extras.map((extr, kk) => {
+        totalPrice += extr.quantity * extr.extraPrice;
+      });
+    });
+
+    var finalPrice = totalPrice + deliveryPrice;
+
+    return axios
+      .post(`/order`, {
+        deliveryAddressId,
+        restaurantId,
+        take: take ? 1 : 0,
+        cutlery: cutlery ? 1 : 0,
+        products,
+        messageCourier: comment,
+        locationId: city.id,
+        deliveryPrice,
+        totalPrice,
+        finalPrice,
+        lang: country,
+        payment,
+      })
+      .then(response => {
+        removeClientToken();
+        console.log(response.data);
+        return response.data;
+      });
+  },
+  orderWithDeliveryAddress: function (
+    token,
+    cityObj,
+    addressStreet,
+    addressHouseNumber,
+    addressFloor,
+    addressDoorNumber,
+    restaurantId,
+    take,
+    cutlery,
+    products,
+    comment,
+    deliveryPrice,
+    phone,
+    fullName,
+    email,
+    country,
+    payment,
+  ) {
+    !isEmpty(token) && setClientToken(token);
+
+    var totalPrice = 0;
+
+    products.map((cartProduct, key) => {
+      totalPrice += cartProduct.quantity * cartProduct.productPrice;
+
+      totalPrice += cartProduct.quantity * cartProduct.boxPrice;
+
+      cartProduct.extras.map((extr, kk) => {
+        totalPrice += extr.quantity * extr.extraPrice;
+      });
+    });
+
+    var finalPrice = totalPrice + deliveryPrice;
+
+    return axios
+      .post(`/order`, {
+        restaurantId,
+        take: take ? 1 : 0,
+        cutlery: cutlery ? 1 : 0,
+        products,
+        messageCourier: comment,
+        street: addressStreet,
+        houseNumber: addressHouseNumber,
+        floor: addressFloor,
+        doorNumber: addressDoorNumber,
+        locationId: cityObj.id,
+        deliveryPrice,
+        totalPrice,
+        finalPrice,
+        phone,
+        fullName,
+        email,
+        lang: country,
+        payment,
+      })
+      .then(response => {
+        !isEmpty(token) && removeClientToken(token);
+        console.log(response.data);
+        return response.data;
+      });
+  },
+  setCouponCodeHandle: function (token, restaurantId, couponCode) {
+    !isEmpty(token) && setClientToken(token);
+
+    return axios
+      .post(`/coupon`, {
+        restaurantId,
+        couponName: couponCode,
+      })
+      .then(response => {
+        !isEmpty(token) && removeClientToken(token);
+        // console.log(response.data);
+        return response.data;
+        // let data = {
+        //     "status": 200,
+        //     "msg": "Available",
+        //     "result": [{
+        //         "id": 1,
+        //         "active": 1,
+        //         "couponName": "RED10",
+        //         "restaurantId": 1,
+        //         "type": 2,
+        //         "value": 3.5
+        //     }]
+        // };
+
+        // return data;
+      });
+  },
+  getUpSellProducts: function (restaurant_id, country) {
+    return axios
+      .post('/product/upsell', {
+        restaurantId: restaurant_id,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
       })
       .catch(error => {
-        dispatch(setLoading(false));
-        setRefresh(false);
+        return {};
       });
-  }, [country, city, user, refresh, filters]);
-
-  useEffect(() => {
-    FoodService.result(
-      country,
-      logged ? user.city.name : city.name,
-      search,
-      filters,
-    )
-      .then(response => {
-        setRefresh(false);
-        if (response.status == 200) {
-          setResult(response.result);
-        }
-      })
-      .catch(error => {
-        setRefresh(false);
-      });
-  }, [search]);
-
-  useEffect(() => {
-    function getRestaurantList(country, cityName, search, filters) {
-      FoodService.promotion(country, cityName)
-        .then(response => {
-          setRefresh(false);
-          if (response.status == 200) {
-            console.log(response.result[0].restaurant_open);
-            setPromotion(response.result);
-          }
-        })
-        .catch(error => {
-          setRefresh(false);
-        });
-
-      if (search == '') {
-        FoodService.all(country, cityName, search, filters)
-          .then(response => {
-            dispatch(setLoading(false));
-            setRefresh(false);
-            if (response.status == 200) {
-              setResult(response.result);
-            }
-          })
-          .catch(error => {
-            dispatch(setLoading(false));
-            setRefresh(false);
-          });
-      } else {
-        FoodService.result(country, cityName, search, filters)
-          .then(response => {
-            setRefresh(false);
-            if (response.status == 200) {
-              setResult(response.result);
-            }
-          })
-          .catch(error => {
-            setRefresh(false);
-          });
-      }
-    }
-
-    const interval = setInterval(
-      () =>
-        getRestaurantList(
-          country,
-          logged ? user.city.name : city.name,
-          search,
-          filters,
-        ),
-      45000,
-    );
-    return () => {
-      clearInterval(interval);
-    };
-  }, [country, user, city, search, filters]);
-
-  return (
-    <Container style={common.container}>
-      <StatusBar />
-      <Header style={common.header}>
-        <View style={common.headerLeft}>
-          <TouchableOpacity
-            onPress={() => {
-              setCityStatus(false);
-              props.navigation.openDrawer();
-            }}>
-            <Icon
-              type="ionicon"
-              name="menu"
-              size={30}
-              color={colors.YELLOW.PRIMARY}
-            />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          style={common.headerTitle}
-          onPress={() => setCityStatus(!cityStatus)}>
-          <Text style={common.headerTitleText}>
-            {!logged ? city.name : user.city.name}
-          </Text>
-          <Icon
-            type="material"
-            name={cityStatus ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
-            size={20}
-            color={colors.BLACK}
-          />
-        </TouchableOpacity>
-        <View style={common.headerRight}>
-          <TouchableOpacity
-            onPress={() => {
-              props.navigation.navigate('Cart');
-            }}>
-            {cartBadge > 0 ? (
-              <Fragment>
-                <CartYellowIcon />
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{cartBadge}</Text>
-                </View>
-              </Fragment>
-            ) : (
-              <Fragment>
-                {/* <CartYellowIcon />
-                                    <View style={styles.badgeEmpty} /> */}
-                <View />
-              </Fragment>
-            )}
-          </TouchableOpacity>
-        </View>
-      </Header>
-      {!cityStatus ? (
-        !filterStatus ? (
-          <Dashboard
-            featured={promotion}
-            trendy={popular}
-            result={result}
-            refresh={refresh}
-            search={search}
-            filters={filters}
-            onFilter={() => setFilterStatus(!filterStatus)}
-            onRefresh={() => setRefresh(true)}
-            onSearch={value => setSearch(value)}
-            onDetail={item =>
-              callOnceInInterval(() =>
-                props.navigation.push('Detail', {restaurant: item}),
-              )
-            }
-          />
-        ) : (
-          <Filters
-            filters={filters}
-            onFilters={value => {
-              dispatch(setFilters(value));
-              setFilterStatus(false);
-            }}
-            onCancel={() => setFilterStatus(false)}
-          />
-        )
-      ) : (
-        <Cities
-          onSave={() => setCityStatus(false)}
-          onLoading={load => dispatch(setLoading(load))}
-        />
-      )}
-    </Container>
-  );
+  },
 };
 
-const styles = StyleSheet.create({
-  badge: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#FEEBD6',
-    backgroundColor: colors.YELLOW.PRIMARY,
-    marginTop: -30,
-    marginLeft: 15,
-  },
-  badgeEmpty: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 16,
-    height: 16,
-    marginTop: -30,
-    marginLeft: 15,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.WHITE,
-  },
-});
+export default FoodService;
