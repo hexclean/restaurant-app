@@ -1,31 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { Container, Header } from "native-base";
+import React, {useState, useEffect} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import {Container, Header} from 'native-base';
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
   FlatList,
-} from "react-native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { Icon } from "react-native-elements";
-import { setLoading } from "@modules/reducers/auth/actions";
-import { ProfileService } from "@modules/services";
-import { isEmpty } from "@utils/functions";
-import { common, colors } from "@constants/themes";
-import { TrustIcon } from "@constants/svgs";
-import i18n from "@utils/i18n";
+} from 'react-native';
+import {Icon} from 'react-native-elements';
+import {setLoading} from '@modules/reducers/auth/actions';
+import {ProfileService} from '@modules/services';
+import {isEmpty} from '@utils/functions';
+import {common, colors} from '@constants/themes';
+import {TrustIcon} from '@constants/svgs';
+import i18n from '@utils/i18n';
 
-export default ReviewList = (props) => {
+export default ReviewList = props => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { reviewStatus } = useSelector((state) => state.profile);
+  const {user} = useSelector(state => state.auth);
+  const {reviewStatus} = useSelector(state => state.profile);
 
   const [visible, setVisible] = useState(false);
   const [addReviewList, setAddReviewList] = useState([]);
@@ -34,22 +29,22 @@ export default ReviewList = (props) => {
   useEffect(() => {
     dispatch(setLoading(true));
     ProfileService.addReviews(user.token)
-      .then((response) => {
+      .then(response => {
         if (response.status == 200) {
           setAddReviewList(response.result);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error.message);
       });
     ProfileService.viewReviews(user.token)
-      .then((response) => {
+      .then(response => {
         dispatch(setLoading(false));
         if (response.status == 200) {
           setViewReviewList(response.result);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         dispatch(setLoading(false));
         console.log(error.message);
       });
@@ -58,17 +53,17 @@ export default ReviewList = (props) => {
   const goReview = (type, reviewCode, reviewId) => {
     dispatch(setLoading(true));
     ProfileService.getReview(user.token, reviewId)
-      .then((response) => {
+      .then(response => {
         dispatch(setLoading(false));
         if (response.status == 200) {
-          props.navigation.push("ReviewAdd", {
+          props.navigation.push('ReviewAdd', {
             type,
             reviewCode,
             review: response.result[0],
           });
         }
       })
-      .catch((error) => {
+      .catch(error => {
         dispatch(setLoading(false));
         console.log(error.message);
       });
@@ -78,7 +73,7 @@ export default ReviewList = (props) => {
     return (
       <View key={index} style={styles.review}>
         <View style={styles.status}>
-          <Text style={styles.statusText}>{i18n.translate("Kit")}</Text>
+          <Text style={styles.statusText}>{i18n.translate('Kit')}</Text>
           <Text style={styles.statusText}>
             {i18n.translate('Operations-order')}
           </Text>
@@ -91,36 +86,32 @@ export default ReviewList = (props) => {
             <TouchableOpacity
               onPress={() =>
                 goReview(1, review.item.review_code, review.item.review_Id)
-              }
-            >
-              <Text style={styles.reviewAdd}>{i18n.translate("Add")}</Text>
+              }>
+              <Text style={styles.reviewAdd}>{i18n.translate('Add')}</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.reviewOption}>
               <TouchableOpacity
-                onPress={() => goReview(2, 0, review.item.review_Id)}
-              >
-                <Text style={styles.reviewAdd}>{i18n.translate("View")}</Text>
+                onPress={() => goReview(2, 0, review.item.review_Id)}>
+                <Text style={styles.reviewAdd}>{i18n.translate('View')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ marginLeft: 20 }}
+                style={{marginLeft: 20}}
                 onPress={() =>
-                  props.navigation.push("ReviewDelete", { review: review.item })
-                }
-              >
+                  props.navigation.push('ReviewDelete', {review: review.item})
+                }>
                 <TrustIcon />
               </TouchableOpacity>
-               {/* <Icon type='ant-design' name='delete' size={20} color='#999' onPress={() => props.navigation.push('ReviewDelete', { review: review.item })} />  */}
             </View>
           )}
         </View>
         <View style={styles.status}>
-          <Text style={styles.statusText}>{i18n.translate("When")}</Text>
+          <Text style={styles.statusText}>{i18n.translate('When')}</Text>
         </View>
         <View style={styles.reviewMain}>
           <Text style={styles.reviewText} numberOfLines={1}>
             {!isEmpty(review.item.review_created) &&
-              review.item.review_created.replace("T", " - ")}
+              review.item.review_created.replace('T', ' - ')}
           </Text>
         </View>
       </View>
@@ -143,17 +134,12 @@ export default ReviewList = (props) => {
         </View>
         <TouchableOpacity style={common.headerTitle}>
           <Text style={common.headerTitleText} numberOfLines={1}>
-            {i18n.translate("Restaurants reviews")}
+            {i18n.translate('Restaurants reviews')}
           </Text>
         </TouchableOpacity>
         <View style={common.headerRight} />
       </Header>
-      <View style={{ flex: 1, padding: 20 }}>
-        {/* <Text style={styles.descriptionText}>
-          {i18n.translate(
-            "You can only write a review if you have ordered at least 5 times before"
-          )}
-        </Text> */}
+      <View style={{flex: 1, padding: 20}}>
         <FlatList
           showsVerticalScrollIndicator={false}
           data={[...addReviewList, ...viewReviewList]}
@@ -173,55 +159,55 @@ export default ReviewList = (props) => {
 
 const styles = StyleSheet.create({
   descriptionText: {
-    width: "100%",
+    width: '100%',
     fontSize: 16,
-    fontWeight: "400",
-    color: "#666",
+    fontWeight: '400',
+    color: '#666',
     lineHeight: 24,
     marginBottom: 10,
   },
   review: {
-    width: "100%",
+    width: '100%',
     marginTop: 10,
     paddingBottom: 5,
     borderBottomWidth: 1,
-    borderBottomColor: "#C4C4C4",
+    borderBottomColor: '#C4C4C4',
   },
   status: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    width: '100%',
     marginBottom: 5,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: "bold",
-    color: "#999999",
+    fontWeight: 'bold',
+    color: '#999999',
   },
   reviewMain: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
     height: 30,
     marginBottom: 5,
   },
   reviewText: {
-    width: "70%",
+    width: '70%',
     fontSize: 16,
     lineHeight: 24,
-    color: "#111",
+    color: '#111',
   },
   reviewOption: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     width: 100,
   },
   reviewAdd: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: colors.YELLOW.PRIMARY,
   },
 });

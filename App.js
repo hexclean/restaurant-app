@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { LogBox } from 'react-native';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistor } from '@modules';
+import React, {useState} from 'react';
+import {LogBox} from 'react-native';
+import {Provider} from 'react-redux';
+import {PersistGate} from 'redux-persist/integration/react';
+import {store, persistor} from '@modules';
 import AppContainer from '@navigations';
-import { Splash } from '@components';
+import {Splash} from '@components';
 
 import i18n from '@utils/i18n';
 
@@ -25,4 +25,4 @@ export default App = () => {
       </PersistGate>
     </Provider>
   );
-}
+};

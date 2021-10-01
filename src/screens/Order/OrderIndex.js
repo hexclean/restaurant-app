@@ -1,71 +1,56 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { Container, Header } from "native-base";
+import React, {useState, useEffect} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import {Container, Header} from 'native-base';
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
   FlatList,
-} from "react-native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { Icon } from "react-native-elements";
-import { setLoading } from "@modules/reducers/auth/actions";
-import { FoodService } from "@modules/services";
-import { isEmpty } from "@utils/functions";
-import { common, colors } from "@constants/themes";
-import { TrustIcon } from "@constants/svgs";
-import i18n from "@utils/i18n";
+} from 'react-native';
 
-export default OrderIndex = (props) => {
+import {Icon} from 'react-native-elements';
+import {setLoading} from '@modules/reducers/auth/actions';
+import {FoodService} from '@modules/services';
+import {isEmpty} from '@utils/functions';
+import {common, colors} from '@constants/themes';
+import i18n from '@utils/i18n';
+
+export default OrderIndex = props => {
   const dispatch = useDispatch();
-  const { country, user } = useSelector((state) => state.auth);
+  const {country, user} = useSelector(state => state.auth);
 
   const [orderList, setOrderList] = useState([]);
 
   useEffect(() => {
     if (!isEmpty(props.route.params.order)) {
-      props.navigation.push("OrderDetail", { order: props.route.params.order });
+      props.navigation.push('OrderDetail', {order: props.route.params.order});
     }
     dispatch(setLoading(true));
     FoodService.getOrders(user.token)
-      .then((response) => {
+      .then(response => {
         dispatch(setLoading(false));
         if (response.status == 200) {
           setOrderList(response.result);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         dispatch(setLoading(false));
-        console.log(error.message);
       });
   }, []);
 
-  // useEffect(() => {
-  //     if (finalOrderId === 0) {
-  //         var temp = 0;
-  //     } else {
-  //         props.navigation.push('OrderDetail', { order: finalOrderId });
-  //     }
-  // }, [finalOrderId])
-
-  const goOrder = (orderId) => {
+  const goOrder = orderId => {
     dispatch(setLoading(true));
     FoodService.getOrder(user.token, country, orderId)
-      .then((response) => {
+      .then(response => {
         dispatch(setLoading(false));
         if (response.status == 200) {
-          props.navigation.push("OrderDetail", { order: response });
+          props.navigation.push('OrderDetail', {order: response});
         }
       })
-      .catch((error) => {
+      .catch(error => {
         dispatch(setLoading(false));
-        console.log(error.message);
       });
   };
 
@@ -73,7 +58,7 @@ export default OrderIndex = (props) => {
     return (
       <View key={index} style={styles.review}>
         <View style={styles.status}>
-          <Text style={styles.statusText}>{i18n.translate("Where")}</Text>
+          <Text style={styles.statusText}>{i18n.translate('Where')}</Text>
         </View>
         <View style={styles.reviewMain}>
           <Text style={styles.reviewText} numberOfLines={1}>
@@ -81,23 +66,23 @@ export default OrderIndex = (props) => {
           </Text>
         </View>
         <View style={styles.status}>
-          <Text style={[styles.statusText, { width: "40%" }]}>
-            {i18n.translate("Kit")}
+          <Text style={[styles.statusText, {width: '40%'}]}>
+            {i18n.translate('Kit')}
           </Text>
           <Text style={styles.statusText}>
             {i18n.translate('Operations-order')}
           </Text>
         </View>
         <View style={styles.reviewMain}>
-          <Text style={[styles.reviewText, { width: "40%" }]} numberOfLines={1}>
-            {order.item.total} {i18n.translate("lei")}
+          <Text style={[styles.reviewText, {width: '40%'}]} numberOfLines={1}>
+            {order.item.total} {i18n.translate('lei')}
           </Text>
           <TouchableOpacity onPress={() => goOrder(order.item.order_id)}>
-            <Text style={styles.reviewAdd}>{i18n.translate("View")}</Text>
+            <Text style={styles.reviewAdd}>{i18n.translate('View')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.status}>
-          <Text style={styles.statusText}>{i18n.translate("When")}</Text>
+          <Text style={styles.statusText}>{i18n.translate('When')}</Text>
         </View>
         <View style={styles.reviewMain}>
           <Text style={styles.reviewText} numberOfLines={1}>
@@ -124,13 +109,12 @@ export default OrderIndex = (props) => {
         </View>
         <TouchableOpacity style={common.headerTitle}>
           <Text style={common.headerTitleText} numberOfLines={1}>
-            {i18n.translate("My orders")}
+            {i18n.translate('My orders')}
           </Text>
         </TouchableOpacity>
         <View style={common.headerRight} />
       </Header>
-      <View style={{ flex: 1, padding: 20 }}>
-        {/* <Text style={styles.descriptionText}>{i18n.translate('You can only write a review if you have ordered at least 5 times before')}</Text> */}
+      <View style={{flex: 1, padding: 20}}>
         <FlatList
           showsVerticalScrollIndicator={false}
           data={orderList}
@@ -144,55 +128,55 @@ export default OrderIndex = (props) => {
 
 const styles = StyleSheet.create({
   descriptionText: {
-    width: "100%",
+    width: '100%',
     fontSize: 16,
-    fontWeight: "400",
-    color: "#666",
+    fontWeight: '400',
+    color: '#666',
     lineHeight: 24,
     marginBottom: 10,
   },
   review: {
-    width: "100%",
+    width: '100%',
     marginTop: 10,
     paddingBottom: 5,
     borderBottomWidth: 1,
-    borderBottomColor: "#C4C4C4",
+    borderBottomColor: '#C4C4C4',
   },
   status: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    width: '100%',
     marginBottom: 5,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: "bold",
-    color: "#999999",
+    fontWeight: 'bold',
+    color: '#999999',
   },
   reviewMain: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '100%',
     height: 30,
     marginBottom: 5,
   },
   reviewText: {
-    width: "70%",
+    width: '70%',
     fontSize: 16,
     lineHeight: 24,
-    color: "#111",
+    color: '#111',
   },
   reviewOption: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     width: 100,
   },
   reviewAdd: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: colors.YELLOW.PRIMARY,
   },
 });

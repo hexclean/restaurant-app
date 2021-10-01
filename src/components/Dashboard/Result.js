@@ -1,8 +1,6 @@
 import React, {useState, useEffect, Fragment} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
+
 import {
-  Platform,
-  StatusBar,
   StyleSheet,
   LogBox,
   FlatList,
@@ -10,10 +8,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
 import {Icon} from 'react-native-elements';
 import Card from '../Athena/Card';
 import {isEmpty} from '@utils/functions';

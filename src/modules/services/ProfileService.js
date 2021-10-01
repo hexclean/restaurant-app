@@ -7,7 +7,7 @@ const ProfileService = {
       .get(`/location/delivery-price/${restaurant_id}/${city_id}`)
       .then(response => {
         removeClientToken();
-        console.log('delivery price == ', response.data);
+
         return response.data;
       });
   },
@@ -59,7 +59,6 @@ const ProfileService = {
     });
   },
   modifyProfileInformation: function (token, fullName, email, phoneNumber) {
-    console.log(token);
     setClientToken(token);
     return axios
       .post(`/profile/me`, {
@@ -86,7 +85,6 @@ const ProfileService = {
     newPasswordAgain,
     country,
   ) {
-    console.log(oldPassword, newPassword, newPasswordAgain, country);
     setClientToken(token);
     return axios
       .post(`/profile/change-password`, {

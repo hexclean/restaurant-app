@@ -1,14 +1,13 @@
-import React, {useState, useEffect, Fragment} from 'react';
+import React, {Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
 } from 'react-native';
-import {Container, Header, Content, Footer} from 'native-base';
+import {Container, Header, Content} from 'native-base';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
 import HomeStack from '@navigations/StackNavigators/HomeStackNavigator';
@@ -23,7 +22,7 @@ import {
 } from 'react-native-responsive-screen';
 import {Icon} from 'react-native-elements';
 import {deleteUser} from '@modules/reducers/auth/actions';
-import {isEmpty, navOptionHandler} from '@utils/functions';
+import {navOptionHandler} from '@utils/functions';
 import {common, colors} from '@constants/themes';
 import {
   CartYellowIcon,
@@ -31,8 +30,6 @@ import {
   ProfileIcon,
   LocationIcon,
   LanguageIcon,
-  ServiceIcon,
-  GoBackIcon,
 } from '@constants/svgs';
 import i18n from '@utils/i18n';
 
@@ -139,8 +136,6 @@ const DrawerContent = props => {
               </Fragment>
             ) : (
               <Fragment>
-                {/* <CartYellowIcon />
-                                    <View style={styles.badgeEmpty} /> */}
                 <View />
               </Fragment>
             )}
@@ -190,12 +185,8 @@ const DrawerContent = props => {
             {i18n.translate('Language selector')}
           </Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.menuItem} onPress={() => props.navigation.navigate('Home')}>
-                    <ServiceIcon />
-                    <Text style={styles.menuTitle}>{i18n.translate('Customer service')}</Text>
-                </TouchableOpacity> */}
+
         {logged ? (
-          // <Footer style={styles.header}>
           <TouchableOpacity style={styles.menuItem} onPress={() => onLogout()}>
             <Icon
               type="material-community"
@@ -206,8 +197,6 @@ const DrawerContent = props => {
             <Text style={styles.menuTitle}>{i18n.translate('Log out')}</Text>
           </TouchableOpacity>
         ) : (
-          // </Footer>
-          // <Footer style={styles.header}>
           <TouchableOpacity style={styles.menuItem} onPress={() => onLogout()}>
             <Icon
               type="material-community"
@@ -219,7 +208,6 @@ const DrawerContent = props => {
               {i18n.translate('Back to the login')}
             </Text>
           </TouchableOpacity>
-          // </Footer>
         )}
       </Content>
     </Container>

@@ -1,21 +1,36 @@
-import React from "react";
-import { Platform, StatusBar, StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { Icon } from "react-native-elements";
-import { colors } from "@constants/themes";
+import React from 'react';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
+import {Icon} from 'react-native-elements';
+import {colors} from '@constants/themes';
 
-const Picker = ({ data, one, onSelect }) => {
+const Picker = ({data, one, onSelect}) => {
   return (
     <View style={styles.dialog}>
       <View style={[styles.dialogMain]}>
-        <View style={{ width: '90%', marginTop: 10, marginBottom: 5 }}>
+        <View style={{width: '90%', marginTop: 10, marginBottom: 5}}>
           {data.map((item, key) => {
             return (
-              <TouchableOpacity key={key} style={styles.item} onPress={() => onSelect(item)}>
+              <TouchableOpacity
+                key={key}
+                style={styles.item}
+                onPress={() => onSelect(item)}>
                 <Text>{item.label}</Text>
-                <Icon name='check' type='antdesign' size={20} color={item.value === one.value ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY} />
+                <Icon
+                  name="check"
+                  type="antdesign"
+                  size={20}
+                  color={
+                    item.value === one.value
+                      ? colors.YELLOW.PRIMARY
+                      : colors.GREY.PRIMARY
+                  }
+                />
               </TouchableOpacity>
-            )
+            );
           })}
         </View>
       </View>
@@ -24,21 +39,20 @@ const Picker = ({ data, one, onSelect }) => {
 };
 
 const styles = StyleSheet.create({
-
   dialog: {
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
     width: wp('100.0%'),
     height: hp('100.0%'),
-    backgroundColor: '#000000BF'
+    backgroundColor: '#000000BF',
   },
   dialogMain: {
     alignItems: 'center',
     width: wp('50%'),
     backgroundColor: '#FFF',
     zIndex: 1000,
-    borderRadius: 5
+    borderRadius: 5,
   },
   dialogHeader: {
     justifyContent: 'center',
@@ -50,7 +64,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     shadowColor: '#000',
     shadowOpacity: 0.9,
-    shadowOffset: { height: 2, width: 1 },
+    shadowOffset: {height: 2, width: 1},
     shadowRadius: 5,
     elevation: 10,
   },
@@ -62,11 +76,11 @@ const styles = StyleSheet.create({
     height: 30,
     paddingLeft: 10,
     paddingRight: 10,
-    alignItems: 'center',
+
     borderWidth: 0.5,
     borderRadius: 5,
     borderColor: colors.BLACK,
-    marginBottom: 5
+    marginBottom: 5,
   },
 });
 

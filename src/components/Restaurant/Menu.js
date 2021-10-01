@@ -2,7 +2,6 @@ import React, {useState, useEffect, Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {
   Platform,
-  StatusBar,
   StyleSheet,
   LogBox,
   FlatList,
@@ -14,20 +13,15 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import {Icon} from 'react-native-elements';
+
 import Card from '../Athena/Card';
 import {setLoading} from '@modules/reducers/auth/actions';
-import {
-  setCartRestaurant,
-  setCartProducts,
-  setCartBadge,
-  setCartToast,
-} from '@modules/reducers/food/actions';
+
 import {FoodService} from '@modules/services';
 import {isEmpty} from '@utils/functions';
 import {common, colors} from '@constants/themes';
 import {RES_URL} from '@constants/configs';
-import {CartWhiteIcon} from '@constants/svgs';
+
 import i18n from '@utils/i18n';
 
 import moment from 'moment';
@@ -62,10 +56,6 @@ const Product = ({
           cartProduct.variantId == product.variant_id
         );
       });
-      if (index >= 0) {
-        // setCount(cartProducts[index].quantity);
-        // setFlag(true);
-      }
     }
   });
 
@@ -112,7 +102,6 @@ const Product = ({
             onModal();
           } else {
             flag ? onCart() : onExtra(product, count);
-            // checkExtr(cartProducts, restaurant, product, count);
           }
         }}>
         <View style={styles.productItemGroup}>
@@ -187,7 +176,6 @@ export default Menu = props => {
       props.category.category_id != 0 &&
       props.subCategory.subcategoryId != 0
     ) {
-      console.log(props.category.category_id, 'sub = ', props.subCategory);
       setSubCategoryIndex(props.subCategory.index);
       setProducts([]);
       FoodService.products(
@@ -203,7 +191,6 @@ export default Menu = props => {
           if (response.status == 200) {
             setProducts(response.result);
           } else {
-            // dispatch(setLoading(false));
             setProducts([]);
           }
         })
@@ -220,7 +207,6 @@ export default Menu = props => {
       props.category.category_id != 0 &&
       props.subCategory.subcategoryId != 0
     ) {
-      console.log(props.category.category_id, 'search = ', props.subCategory);
       FoodService.products(
         country,
         'MFR0LE79KX',
@@ -233,7 +219,6 @@ export default Menu = props => {
           if (response.status == 200) {
             setProducts(response.result);
           } else {
-            // dispatch(setLoading(false));
             setProducts([]);
           }
         })
@@ -310,7 +295,6 @@ export default Menu = props => {
           fontSize={16}
           autoCorrect={false}
           enablesReturnKeyAutomatically={true}
-          // value={props.search}
           ref={input => {
             _textInput = input;
           }}
@@ -329,7 +313,6 @@ export default Menu = props => {
         </View>
       ) : (
         <Card key="product" style={styles.card}>
-          {/* <Text style={[styles.cardTitle, { marginTop: 20, fontSize: 14 }]}>{props.category.category_name} - {props.subCategory.subcategories_name}</Text> */}
           <FlatList
             contentContainerStyle={{paddingVertical: 20}}
             showsHorizontalScrollIndicator={false}
@@ -356,9 +339,7 @@ export default Menu = props => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    // padding: 20
-  },
+  container: {},
   card: {
     marginHorizontal: 20,
     width: wp('100%') - 40,
@@ -467,7 +448,6 @@ const styles = StyleSheet.create({
   },
   productTitle: {
     width: '100%',
-    // marginTop: 16,
     fontSize: 16,
     fontWeight: '700',
     color: '#111',
@@ -510,7 +490,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.YELLOW.PRIMARY,
-    // width: '45%',
     textAlign: 'left',
   },
   cart: {

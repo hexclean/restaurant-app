@@ -2,20 +2,15 @@ import React, {useState, useEffect, Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {Container, Header} from 'native-base';
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   FlatList,
 } from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import {Icon, SearchBar} from 'react-native-elements';
+
+import {Icon} from 'react-native-elements';
 import {setLoading} from '@modules/reducers/auth/actions';
 import {setDeliveryStatus} from '@modules/reducers/profile/actions';
 import {AuthService, ProfileService} from '@modules/services';
@@ -30,7 +25,6 @@ export default CartDeliveryAdd = props => {
   const dispatch = useDispatch();
   const {country, user} = useSelector(state => state.auth);
   const {deliveryStatus} = useSelector(state => state.profile);
-  const {cartRestaurant} = useSelector(state => state.food);
 
   const [type] = useState(props.route.params.type);
   const [addressId] = useState(
@@ -86,8 +80,6 @@ export default CartDeliveryAdd = props => {
         });
     };
     getCities();
-
-    return () => console.log('Unmounted');
   }, []);
 
   useEffect(() => {
@@ -278,19 +270,8 @@ export default CartDeliveryAdd = props => {
               color={colors.GREY.PRIMARY}
             />
           </TouchableOpacity>
-          {/* <Text style={common.errorText}>{errorCity}</Text> */}
         </View>
         {active ? (
-          // <ScrollView style={!isEmpty(citys) && citys.length > 5 ? styles.listViewheight : styles.listView}>
-          //     {!isEmpty(citys) && citys.map((cityOne, key) => (
-          //         <TouchableOpacity key={key} style={[styles.itemView, key == citys.length - 1 && styles.noborder]} onPress={() => {
-          //             setActive(false);
-          //             setCityObj(cityOne);
-          //         }}>
-          //             <Text style={styles.itemText} numberOfLines={1}>{cityOne.cities}</Text>
-          //         </TouchableOpacity>
-          //     ))}
-          // </ScrollView>
           <FlatList
             style={
               !isEmpty(filterCitys) && filterCitys.length > 5
@@ -538,7 +519,6 @@ const styles = StyleSheet.create({
   },
   listView: {
     width: '100%',
-    // height: 250,
     paddingHorizontal: 10,
     backgroundColor: colors.WHITE,
     borderLeftWidth: 1,

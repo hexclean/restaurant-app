@@ -3,7 +3,6 @@ import {useSelector, useDispatch} from 'react-redux';
 import {Card, Container, Content, Header} from 'native-base';
 import {
   Platform,
-  StatusBar,
   StyleSheet,
   View,
   Text,
@@ -16,27 +15,18 @@ import {
 } from 'react-native-responsive-screen';
 import {Icon} from 'react-native-elements';
 import {setLoading} from '@modules/reducers/auth/actions';
-import {
-  setCartProducts,
-  setCartBadge,
-  setCartToast,
-} from '@modules/reducers/food/actions';
+import {setCartProducts, setCartBadge} from '@modules/reducers/food/actions';
 import {FoodService} from '@modules/services';
 import {isEmpty} from '@utils/functions';
 import {common, colors} from '@constants/themes';
-import {
-  TrustIcon,
-  CartYellowIcon,
-  CartWhiteIcon,
-  WarningIcon,
-} from '@constants/svgs';
+import {TrustIcon, WarningIcon} from '@constants/svgs';
 import {RES_URL} from '@constants/configs';
 import FastImage from 'react-native-fast-image';
 import i18n from '@utils/i18n';
 
 const BOTTOM_BUTTON_DISTANCE = Platform.OS === 'ios' ? 40 : 26;
 
-const CartItem = ({cartRestaurant, cartProduct, index, onSelect, onDelete}) => {
+const CartItem = ({cartProduct, index, onSelect, onDelete}) => {
   const cartFinalPrice = () => {
     let final = cartProduct.productPrice;
 
@@ -196,7 +186,6 @@ export default CartIndex = props => {
 
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
-      console.log('order detail focus ---- ');
       setNavi(true);
     });
     return unsubscribe;
@@ -217,7 +206,6 @@ export default CartIndex = props => {
 
   useEffect(() => {
     if (isEmpty(cartProducts) && navi) {
-      console.log('cart screen empty cartproducts === ', navi);
       setNavi(false);
       setTimeout(() => {
         props.navigation.goBack(null);
@@ -234,7 +222,6 @@ export default CartIndex = props => {
   };
 
   const onSelect = (check, item, count, visibleNotiStatus) => {
-    console.log('visible noti = ', visibleNotiStatus);
     if (check) {
       var index = cartProducts.findIndex(cartProduct => {
         return cartProduct.cartId == item.cartId;
@@ -281,9 +268,8 @@ export default CartIndex = props => {
       });
       dispatch(setCartBadge(totalBadge));
       dispatch(setCartProducts(result));
-      // dispatch(setCartBadge(cartBadge - 1));
+
       if (isEmpty(result)) {
-        console.log('cart screen empty cart ');
         setNavi(false);
         setTimeout(() => {
           props.navigation.goBack(null);
@@ -316,64 +302,19 @@ export default CartIndex = props => {
         dispatch(setLoading(false));
         setUpSellProducts([]);
       });
-
-    // FoodService.products( "en", 1, 1, 1, 1, "")
-    //   .then(async (response) => {
-    //     dispatch(setLoading(false));
-    //     if (response.status == 200) {
-    //       setUpSellProducts(response.result);
-    //     } else {
-    //       setUpSellProducts([]);
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     dispatch(setLoading(false));
-    //     setUpSellProducts([]);
-    //   });
   }, [cartRestaurant]);
 
   const onSelectUpSellProduct = item => {
-    console.log(item);
-    // if (item.modal == 0) // add cart
-    // {
-    //   var counter = cartProducts.length + 1;
-    //   cartProducts.push({
-    //     cartId: Date.now(),
-    //     variantId: item.variant_id,
-    //     productId: item.product_id,
-    //     productName: item.product_name,
-    //     productDescription: item.product_description,
-    //     allergens: item.allergens_name,
-    //     productPrice: item.product_price,
-    //     boxPrice: isEmpty(item.box_price) ? 0 : item.box_price,
-    //     quantity: 1,
-    //     message: '',
-    //     extras: [],
-    //     counter
-    //   });
-    //   var totalBadge = 0;
-    //   cartProducts.map((cartProduct, key) => {
-    //     totalBadge += cartProduct.quantity;
-    //   });
-
-    //   dispatch(setCartProducts(cartProducts));
-    //   dispatch(setCartBadge(totalBadge));
-    //   // dispatch(setCartToast(!cartToast));
-    // }
-    // else if (item.modal == 1) //go to extra
-    // {
     setNavi(false);
     props.navigation.push('CartExtra', {
       restaurant: cartRestaurant,
       product: item,
       count: 1,
     });
-    // }
   };
 
   return (
     <Container style={common.container}>
-      {/* <StatusBar /> */}
       <Header style={common.header}>
         <View style={common.headerLeft}>
           <TouchableOpacity
@@ -398,23 +339,7 @@ export default CartIndex = props => {
           </View>
         </TouchableOpacity>
 
-        <View style={common.headerRight}>
-          {/* <TouchableOpacity>
-            {cartBadge > 0 ? (
-              <Fragment>
-                <CartYellowIcon />
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{cartBadge}</Text>
-                </View>
-              </Fragment>
-            ) : (
-              <Fragment>
-                <CartYellowIcon />
-                <View style={styles.badgeEmpty} />
-              </Fragment>
-            )}
-          </TouchableOpacity> */}
-        </View>
+        <View style={common.headerRight}></View>
       </Header>
       <Content style={styles.cartItemContent}>
         {isExtra == 1 && visibleNotiPlus == 1 && (
@@ -583,9 +508,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    // height: 30,
+
     marginTop: 15,
-    // marginBottom: 10,
   },
   cartText: {
     width: '70%',
@@ -620,7 +544,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    // height: 50,
   },
   cartLeft: {
     alignItems: 'flex-start',
@@ -766,14 +689,13 @@ const styles = StyleSheet.create({
   modalView: {
     justifyContent: 'space-between',
     width: wp('70%'),
-    // height: 200,
+
     backgroundColor: '#1E1E1E',
     borderRadius: 14,
   },
   modalMain: {
     justifyContent: 'center',
     alignItems: 'center',
-    // height: 80,
   },
   modalTitle: {
     width: '80%',
@@ -879,8 +801,7 @@ const styles = StyleSheet.create({
     height: '100%',
     borderTopLeftRadius: 6,
     borderBottomLeftRadius: 6,
-    // borderRightWidth: 1,
-    // borderRightColor: '#C4C4C4',
+
     marginRight: 8,
   },
   productTitle: {
@@ -903,7 +824,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // alignSelf: 'flex-start',
+
     marginTop: 10,
   },
   productPrice: {

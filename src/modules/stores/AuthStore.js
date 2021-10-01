@@ -1,8 +1,4 @@
-import { isEmpty } from '@utils/functions';
-
-class Store {
-  
-}
+class Store {}
 
 const AuthStore = new Store();
 export default AuthStore;

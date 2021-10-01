@@ -1,8 +1,6 @@
-import React, {useState, useEffect} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
+import React, {useEffect} from 'react';
 import {
   Platform,
-  StatusBar,
   StyleSheet,
   LogBox,
   FlatList,
@@ -185,9 +183,7 @@ export default Reviews = props => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    // padding: 20
-  },
+  container: {},
   card: {
     marginHorizontal: 20,
     width: '100%',
@@ -254,8 +250,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     width: wp('100%') - 40,
     padding: 16,
-    // borderWidth: 1,
-    // borderColor: 'rgba(0, 0, 0, 0.15)',
+
     backgroundColor: colors.WHITE,
     shadowColor: 'rgba(0, 0, 0, 0.4)',
     shadowOffset: {width: 2, height: 2},

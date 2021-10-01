@@ -2,18 +2,13 @@ import React, {useState, useEffect, Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {Container, Header, Content} from 'native-base';
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
 } from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import {Icon} from 'react-native-elements';
+
 import {setLoading} from '@modules/reducers/auth/actions';
 import {AuthService} from '@modules/services';
 import {isEmpty, validateEmail} from '@utils/functions';
@@ -24,7 +19,6 @@ import i18n from '@utils/i18n';
 import {TextField} from 'react-native-material-textfield';
 import CodeInput from 'react-native-code-input';
 import CountDown from 'react-native-countdown-component';
-import {isMoment} from 'moment';
 
 export default Forgot = props => {
   const dispatch = useDispatch();
@@ -58,9 +52,6 @@ export default Forgot = props => {
         } else {
           setErrorMsg(i18n.translate('This email is not register'));
           setTimeout(() => setErrorMsg(''), 2500);
-          // setVisible(true);
-          // setResend(false);
-          // setCode(123456);
         }
       })
       .catch(error => {
@@ -191,10 +182,8 @@ export default Forgot = props => {
               <CodeInput
                 codeLength={6}
                 size={50}
-                // secureTextEntry
                 activeColor={colors.YELLOW.PRIMARY}
                 inactiveColor={'#666'}
-                // autoFocus={false}
                 inputPosition="center"
                 containerStyle={common.marginTop35}
                 codeInputStyle={common.borderWidth1D5}

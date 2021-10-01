@@ -1,27 +1,14 @@
-import React, {useState, useEffect} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
-import {Content, Body} from 'native-base';
-import {
-  Platform,
-  StatusBar,
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-// import {Icon} from 'react-native-elements';
-// import Featured from './Featured';
-// import Trendy from './Trendy';
+import React from 'react';
+
+import {Body} from 'native-base';
+import {StyleSheet, View, Image, Text, TouchableOpacity} from 'react-native';
+import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
+
 import Result from './Result';
 import {isEmpty} from '@utils/functions';
 import {common, colors} from '@constants/themes';
-import {images, icons} from '@constants/assets';
-import {SearchIcon, FilterIcon} from '@constants/svgs';
+import {images} from '@constants/assets';
+import {SearchIcon} from '@constants/svgs';
 import i18n from '@utils/i18n';
 
 import {TextField} from 'react-native-material-textfield';
@@ -100,13 +87,6 @@ export default Dashboard = props => {
                 renderLeftAccessory={() => {
                   return <SearchIcon style={{marginRight: 10}} />;
                 }}
-                // renderRightAccessory={() => {
-                //     return (
-                //         <TouchableOpacity onPress={() => props.onFilter()} >
-                //             <FilterIcon style={{ marginLeft: 10 }} />
-                //         </TouchableOpacity>
-                //     )
-                // }}
                 onChangeText={value => props.onSearch(value)}
               />
             </View>
@@ -133,13 +113,7 @@ export default Dashboard = props => {
                 }
               />
             )}
-            {/* {!isEmpty(props.trendy) && (
-              <Trendy
-                key="trendy"
-                data={props.trendy}
-                onDetail={(item) => props.onDetail(item)}
-              />
-            )} */}
+
             {!isEmpty(props.result) && (
               <Result
                 key="result"

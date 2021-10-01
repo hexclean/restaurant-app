@@ -1,23 +1,10 @@
 import React, {useState, useEffect, Fragment} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
-import {
-  Platform,
-  StatusBar,
-  StyleSheet,
-  LogBox,
-  FlatList,
-  View,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+
+import {StyleSheet, LogBox, View, Text, TouchableOpacity} from 'react-native';
+
 import {Icon} from 'react-native-elements';
 import Card from '../Athena/Card';
-import {isEmpty} from '@utils/functions';
-import {common, colors} from '@constants/themes';
+
 import {RES_URL} from '@constants/configs';
 import i18n from '@utils/i18n';
 
@@ -112,20 +99,12 @@ export default Featured = props => {
   return (
     <Card key="featured" style={styles.card}>
       <View style={styles.cardHeader}>
-        {/* <Text style={styles.cardTitle}>{i18n.translate('Featured restaurants')}</Text> */}
         {props.shown && (
           <Text style={styles.cardCount}>
             {i18n.translate('All results')}: {props.count}
           </Text>
         )}
       </View>
-      {/* <FlatList
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        data={props.data}
-        keyExtractor={(featured, index) => index.toString()}
-        renderItem={(featured, index) => (<RenderItem featured={featured} index={index} onDetail={props.onDetail} />)}
-      /> */}
     </Card>
   );
 };

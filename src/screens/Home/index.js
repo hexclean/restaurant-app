@@ -2,7 +2,6 @@ import React, {useState, useEffect, Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {Container, Header} from 'native-base';
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View,
@@ -27,7 +26,7 @@ import {callOnceInInterval} from '@utils/functions';
 export default Home = props => {
   const dispatch = useDispatch();
   const {logged, country, city, user} = useSelector(state => state.auth);
-  const {cartBadge, cartRestaurant, filters} = useSelector(state => state.food);
+  const {cartBadge, filters} = useSelector(state => state.food);
 
   const [cityStatus, setCityStatus] = useState(false);
   const [filterStatus, setFilterStatus] = useState(false);
@@ -47,14 +46,12 @@ export default Home = props => {
     dispatch(setLoading(true));
     FoodService.getPromotionHeader(country, logged ? user.city.id : city.id)
       .then(response => {
-        console.log(response);
         if (response.status == 200) setPromotionHeader(response.result);
       })
       .catch(error => {
         setRefresh(false);
       });
 
-    console.log('index home = ', logged ? user.city.name : city.name);
     FoodService.getDailyMenu(country, logged ? user.city.id : city.id)
       .then(response => {
         setRefresh(false);
@@ -75,16 +72,7 @@ export default Home = props => {
       .catch(error => {
         setRefresh(false);
       });
-    // FoodService.popular(country, logged ? user.city.name : city.name)
-    //     .then((response) => {
-    //         setRefresh(false);
-    //         if (response.status == 200) {
-    //             setPopular(response.result);
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         setRefresh(false);
-    //     });
+
     FoodService.all(
       country,
       logged ? user.city.name : city.name,
@@ -124,11 +112,6 @@ export default Home = props => {
 
   useEffect(() => {
     function getRestaurantList(country, cityId, cityName, search, filters) {
-      console.log(
-        new Date().getMinutes() + ' : ' + new Date().getSeconds(),
-        '  ==  get restaurant status',
-        cityName,
-      );
       FoodService.getDailyMenu(country, cityId)
         .then(response => {
           setRefresh(false);
@@ -143,7 +126,6 @@ export default Home = props => {
         .then(response => {
           setRefresh(false);
           if (response.status == 200) {
-            console.log('restaurant = ', response.result[0]);
             setPromotion(response.result);
           }
         })
@@ -238,8 +220,6 @@ export default Home = props => {
               </Fragment>
             ) : (
               <Fragment>
-                {/* <CartYellowIcon />
-                                    <View style={styles.badgeEmpty} /> */}
                 <View />
               </Fragment>
             )}
@@ -308,7 +288,6 @@ export default Home = props => {
               style={styles.modalButton}
               onPress={() => {
                 setModal(false);
-                // dispatch(setCartRestaurant(null));
                 dispatch(setCartBadge(0));
                 dispatch(setCartProducts([]));
               }}>
@@ -320,9 +299,7 @@ export default Home = props => {
               style={styles.modalButton}
               onPress={() => {
                 setModal(false);
-                // setRestaurant(cartRestaurant);
               }}>
-              {/* <Text style={styles.saveText}>{i18n.translate('Back to the')} {cartRestaurant.restaurant_name} {i18n.translate('restaurant')}</Text> */}
               <Text style={styles.saveText}>{i18n.translate('Cancel')}</Text>
             </TouchableOpacity>
           </View>

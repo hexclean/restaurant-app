@@ -1,15 +1,12 @@
 import React, {useState, useEffect, useRef, Fragment} from 'react';
 import {CommonActions} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
-import {Container, Header, Content} from 'native-base';
-import {SearchBar} from 'react-native-elements';
+import {Header} from 'native-base';
 import {
   Platform,
-  StatusBar,
   BackHandler,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
   FlatList,
   View,
   Text,
@@ -25,11 +22,7 @@ import {
 } from 'react-native-responsive-screen';
 import {Icon} from 'react-native-elements';
 import {setLoading} from '@modules/reducers/auth/actions';
-import {
-  setCartRestaurant,
-  setCartProducts,
-  setCartBadge,
-} from '@modules/reducers/food/actions';
+import {setCartRestaurant, setCartBadge} from '@modules/reducers/food/actions';
 import {ProfileService, FoodService, AuthService} from '@modules/services';
 import {
   isEmpty,
@@ -55,10 +48,8 @@ import i18n from '@utils/i18n';
 
 import moment from 'moment';
 import {TextField} from 'react-native-material-textfield';
-import {ActivityIndicator} from 'react-native-paper';
 
-const CartItem = ({cartRestaurant, cartProduct, index, onSelect, onDelete}) => {
-  // const [count, setCount] = useState(cartProduct.quantity);
+const CartItem = ({cartProduct, index, onSelect, onDelete}) => {
   const cartFinalPrice = () => {
     let final = cartProduct.productPrice;
 
@@ -89,24 +80,9 @@ const CartItem = ({cartRestaurant, cartProduct, index, onSelect, onDelete}) => {
           <TrustIcon />
         </TouchableOpacity>
       </View>
-      {/* <Text style={styles.allergen}>{cartProduct.productDescription}</Text>
-      {!isEmpty(cartProduct.allergens) ? (
-        <Text style={styles.allergenList}>
-          ({i18n.translate('Allergens')}:{' '}
-          {cartProduct.allergens.map((allergen, key) => (
-            <Text key={`allergen${key}`} style={styles.allergen}>
-              {allergen.allergen_name}
-              {key != cartProduct.allergens.length - 1 ? ', ' : ''}
-            </Text>
-          ))}
-          )
-        </Text>
-      ) : null} */}
+
       {!isEmpty(cartProduct.extras)
-        ? // <Text style={styles.extraList}>+{cartProduct.extras.map((extra, key) => (
-          //     <Text key={`extra${key}`} style={styles.extra}>{extra.quantity}*{extra.extraName}{key != cartProduct.extras.length - 1 ? ', ' : ''}</Text>
-          // ))}</Text>
-          cartProduct.extras.map((extra, key) => (
+        ? cartProduct.extras.map((extra, key) => (
             <Text style={styles.extraList} key={`extra${key}`}>
               +
               <Text style={styles.extra}>
@@ -223,10 +199,8 @@ const BOTTOM_BUTTON_DISTANCE = Platform.OS === 'ios' ? 40 : 26;
 
 export default CartDetail = props => {
   const dispatch = useDispatch();
-  const {logged, country, city, user} = useSelector(state => state.auth);
-  const {cartRestaurant, cartProducts, cartBadge} = useSelector(
-    state => state.food,
-  );
+  const {logged, country, user} = useSelector(state => state.auth);
+  const {cartRestaurant, cartProducts} = useSelector(state => state.food);
 
   const [success, setSuccess] = useState(false);
   const [restaurant] = useState(cartRestaurant);
@@ -299,7 +273,6 @@ export default CartDetail = props => {
   const [isDelivery, setIsDelivery] = useState(0);
 
   const [termOfService, setTermOfService] = useState(false);
-  const [privacy, setPrivacy] = useState(false);
 
   const [upSellProducts, setUpSellProducts] = useState([]);
 
@@ -332,7 +305,6 @@ export default CartDetail = props => {
   });
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
-      console.log('cart detail focus ---- ');
       setNavi(true);
     });
     return unsubscribe;
@@ -340,10 +312,9 @@ export default CartDetail = props => {
 
   const getDeliveryAddress = () => {
     dispatch(setLoading(true));
-    console.log('country = ', country);
+
     ProfileService.getDeliveryList(user.token, country)
       .then(response => {
-        // dispatch(setLoading(false));
         if (response.status == 200) {
           setDeliveryList(response.result);
           if (!isEmpty(response.result)) {
@@ -364,7 +335,6 @@ export default CartDetail = props => {
       })
       .catch(error => {
         dispatch(setLoading(false));
-        console.log(error.message);
       });
   };
 
@@ -372,7 +342,6 @@ export default CartDetail = props => {
     dispatch(setLoading(true));
     AuthService.deliveryCities(country, 'MFR0LE79KX')
       .then(response => {
-        // dispatch(setLoading(false));
         if (response.status == 200) {
           setCitys(response.location);
           setFilterCitys(response.location);
@@ -396,10 +365,6 @@ export default CartDetail = props => {
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
 
     navi && getCities();
-
-    // navi && logged && getDeliveryAddress();
-
-    return () => console.log('Unmounted');
   }, [navi]);
 
   useEffect(() => {
@@ -459,17 +424,10 @@ export default CartDetail = props => {
       });
     });
     setTotal(totalAmount);
-    // if (totalAmount < cartRestaurant.minimumOrderUser && navi) {
-    if (totalAmount < minimumOrderPrice && navi) {
-      console.log('total amount minimum');
-      // setNavi(false);
-      // props.navigation.pop();
-    }
   });
 
   useEffect(() => {
     if (isEmpty(cartProducts) && navi) {
-      console.log('empty cartproducts');
       setNavi(false);
       setTimeout(() => {
         props.navigation.pop();
@@ -540,8 +498,6 @@ export default CartDetail = props => {
       });
       dispatch(setCartProducts(result));
       dispatch(setCartBadge(totalBadge));
-      // dispatch(setCartBadge(cartBadge - 1));
-      // if (totalBadge <= 0) props.navigation.pop();
     }
     setVisible(false);
   };
@@ -587,7 +543,6 @@ export default CartDetail = props => {
               setNavi(false);
               setSuccess(true);
               setOrderId(response.finalOrderId);
-              // dispatch(setCartRestaurant(null));
               dispatch(setCartBadge(0));
               dispatch(setCartProducts([]));
             }
@@ -616,7 +571,6 @@ export default CartDetail = props => {
             setNavi(false);
             setSuccess(true);
             setOrderId(response.finalOrderId);
-            // dispatch(setCartRestaurant(null));
             dispatch(setCartBadge(0));
             dispatch(setCartProducts([]));
           }
@@ -648,7 +602,6 @@ export default CartDetail = props => {
         })
         .catch(error => {
           dispatch(setLoading(false));
-          console.log(error.message);
         });
     } else {
       props.navigation.dispatch(
@@ -667,7 +620,7 @@ export default CartDetail = props => {
         ProfileService.getDeliveryPrice(user.token, city_id, 'MFR0LE79KX')
           .then(response => {
             dispatch(setLoading(false));
-            console.log('delivery price ==== ', response);
+
             if (response.status == 200) {
               if (response.result.length > 0) {
                 let free_delivery =
@@ -685,7 +638,6 @@ export default CartDetail = props => {
           })
           .catch(error => {
             dispatch(setLoading(false));
-            console.log(error.message);
           });
       }
     });
@@ -696,10 +648,8 @@ export default CartDetail = props => {
     let final_price = total + delivery_price;
 
     if (couponType == 1) {
-      //fixed
       final_price = final_price < couponValue ? 0 : final_price - couponValue;
     } else if (couponType == 2) {
-      //percentage
       let reducePrice = ((final_price * couponValue) / 100).toFixed(2);
       final_price = final_price - reducePrice;
     }
@@ -713,14 +663,13 @@ export default CartDetail = props => {
     FoodService.setCouponCodeHandle(user.token, 'MFR0LE79KX', couponCode)
       .then(response => {
         dispatch(setLoading(false));
-        console.log(response);
+
         if (response.status == 200) {
           if (
             response.result[0].active == 0 ||
             response.result[0].active == 2 ||
             response.result[0].active == 3
           ) {
-            // setErrorCouponCode(response.msg);
             setErrorCouponCode(i18n.translate('Invalid coupon code'));
             setTimeout(() => {
               setErrorCouponCode('');
@@ -728,7 +677,6 @@ export default CartDetail = props => {
 
             setCouponActive(0);
           } else if (response.result[0].active == 1) {
-            // setSuccessCouponCode(response.msg);
             setSuccessCouponCode(
               i18n.translate('Coupon code used successfully'),
             );
@@ -741,7 +689,6 @@ export default CartDetail = props => {
             setCouponValue(response.result[0].value);
           }
         } else if (response.status == 404) {
-          // setErrorCouponCode(response.msg);
           setErrorCouponCode(i18n.translate('Invalid coupon code'));
           setTimeout(() => {
             setErrorCouponCode('');
@@ -752,7 +699,6 @@ export default CartDetail = props => {
       })
       .catch(error => {
         dispatch(setLoading(false));
-        console.log(error);
       });
   };
 
@@ -781,7 +727,6 @@ export default CartDetail = props => {
         style={{
           backgroundColor: '#fff',
           padding: 10,
-          // height: 50,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
@@ -815,7 +760,6 @@ export default CartDetail = props => {
       dispatch(setLoading(true));
       FoodService.getDownSellProducts('MFR0LE79KX', country)
         .then(response => {
-          // dispatch(setLoading(false));
           if (response.status == 200) {
             setUpSellProducts(response.result);
           } else {
@@ -835,7 +779,6 @@ export default CartDetail = props => {
       product: item,
       count: 1,
     });
-    // }
   };
 
   return (
@@ -1240,7 +1183,6 @@ export default CartDetail = props => {
                       color={colors.GREY.PRIMARY}
                     />
                   </TouchableOpacity>
-                  {/* <Text style={common.errorText}>{errorCity}</Text> */}
                 </View>
                 {active ? (
                   <FlatList
@@ -1451,16 +1393,6 @@ export default CartDetail = props => {
                   ]}>
                   {i18n.translate('Coupon Codes')}
                 </Text>
-                {/* <Text
-                  style={[
-                    styles.labelTextNormal1,
-                    !isEmpty(errorCouponCode)
-                      ? common.fontColorRed
-                      : common.fontColorBlack,
-                  ]}>
-                  {' '}
-                  ({i18n.translate('If exist')})
-                </Text> */}
               </View>
               <View style={styles.couponCodeContainer}>
                 <TextField
@@ -1635,34 +1567,7 @@ export default CartDetail = props => {
                 </Text>
               </TouchableOpacity>
             )}
-            {/* {!logged && (
-              <TouchableOpacity
-                style={styles.rememberMe}
-                onPress={() => setPrivacy(!privacy)}>
-                <Icon
-                  type="material-community"
-                  name={
-                    privacy ? 'check-box-outline' : 'checkbox-blank-outline'
-                  }
-                  size={25}
-                  color={privacy ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
-                />
-                <Text style={styles.rememberText}>
-                  {i18n.translate('I accept the ')}
-                  <Text
-                    style={[
-                      styles.rememberText,
-                      common.fontColorYellow,
-                      common.underLine,
-                    ]}
-                    onPress={() =>
-                      Linking.openURL('http://foodnet.ro/ro/privacy')
-                    }>
-                    {i18n.translate('Privacy')}
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-            )} */}
+
             <View style={{height: 160}}></View>
           </TouchableOpacity>
         ) : (
@@ -1912,9 +1817,7 @@ export default CartDetail = props => {
                   'Are you sure you want to delete the contents of your cart all',
                 )}
               </Text>
-              <Text style={styles.modalDescription}>
-                {/* {i18n.translate("This operation cannot be undone")} */}
-              </Text>
+              <Text style={styles.modalDescription}></Text>
             </View>
             <TouchableOpacity
               style={styles.modalButton}
@@ -2285,7 +2188,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
-    // backgroundColor: colors.YELLOW.PRIMARY
   },
   buttonText: {
     fontSize: 16,
@@ -2321,9 +2223,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    // height: 30,
     marginTop: 15,
-    // marginBottom: 10,
   },
   cartText: {
     width: '70%',
@@ -2358,7 +2258,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    // height: 50,
   },
   cartLeft: {
     alignItems: 'flex-start',
@@ -2616,7 +2515,6 @@ const styles = StyleSheet.create({
   },
   listView1: {
     width: '100%',
-    // height: 250,
     paddingHorizontal: 10,
     backgroundColor: colors.WHITE,
     borderLeftWidth: 1,
@@ -2737,8 +2635,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderTopLeftRadius: 6,
     borderBottomLeftRadius: 6,
-    // borderRightWidth: 1,
-    // borderRightColor: '#C4C4C4',
     marginRight: 8,
   },
   productTitle: {
@@ -2761,7 +2657,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // alignSelf: 'flex-start',
     marginTop: 10,
   },
   productPrice: {

@@ -1,22 +1,17 @@
 import React, {useState, useEffect, Fragment, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {Container, Content, Header} from 'native-base';
+import {Header} from 'native-base';
 import {
   Platform,
-  StatusBar,
   StyleSheet,
   FlatList,
   View,
   Text,
   TouchableOpacity,
   Animated,
-  Image,
   SafeAreaView,
 } from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import {widthPercentageToDP as wp} from 'react-native-responsive-screen';
 import {Icon} from 'react-native-elements';
 import {setLoading} from '@modules/reducers/auth/actions';
 import {
@@ -30,7 +25,6 @@ import {isEmpty} from '@utils/functions';
 import {common, colors} from '@constants/themes';
 import {RES_URL} from '@constants/configs';
 import i18n from '@utils/i18n';
-import moment from 'moment';
 import {TextField} from 'react-native-material-textfield';
 
 const HEADER_MAX_HEIGHT = Platform.OS === 'ios' ? 300 : 260;
@@ -59,11 +53,6 @@ const Required = ({required, index, quantity, onSelect}) => {
             color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
           />
           <Text style={{fontSize: 16}}>{required.extra_name}</Text>
-          {/* {!isEmpty(required.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {required.allergens_name.map((allergen, key) => (
-                            <Text key={`allergen${key}`} style={styles.allergen}>{allergen.allergen}{key != required.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
         </View>
         <Text style={styles.price}>
           {(required.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
@@ -93,11 +82,6 @@ const Optional = ({optional, index, quantity, onSelect}) => {
             color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
           />
           <Text style={{fontSize: 16}}>{optional.extra_name}</Text>
-          {/* {!isEmpty(optional.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
-                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
         </View>
         <Text style={styles.price}>
           {(optional.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
@@ -127,11 +111,6 @@ const Sauce = ({sauce, index, quantity, onSelect}) => {
             color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
           />
           <Text style={{fontSize: 16}}>{sauce.extra_name}</Text>
-          {/* {!isEmpty(optional.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
-                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
         </View>
         <Text style={styles.price}>
           {(sauce.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
@@ -144,9 +123,7 @@ const Sauce = ({sauce, index, quantity, onSelect}) => {
 export default Extra = props => {
   const dispatch = useDispatch();
   const {country} = useSelector(state => state.auth);
-  const {cartRestaurant, cartProducts, cartBadge, cartToast} = useSelector(
-    state => state.food,
-  );
+  const {cartProducts, cartToast} = useSelector(state => state.food);
 
   const [restaurant] = useState(props.route.params.restaurant);
   const [product] = useState(props.route.params.product);
@@ -189,7 +166,6 @@ export default Extra = props => {
       dispatch(setLoading(true));
       FoodService.required(country, 'MFR0LE79KX', product.variant_id)
         .then(response => {
-          // dispatch(setLoading(false));
           if (response.status == 200) {
             setMinRequired(response.minRequired);
             setRequireds(response.result);
@@ -319,8 +295,6 @@ export default Extra = props => {
       } else {
         setRequiredList(requiredResult);
       }
-
-      console.log(requiredList.length, '  : minRequired = ', minRequired);
     } else if (type == 2) {
       var optionalResult = optionalList.filter(optional => {
         return optional.extra_id != item.extra_id;
@@ -394,7 +368,7 @@ export default Extra = props => {
           type: 'opt',
         });
       });
-      console.log(extras);
+
       var counter = cartProducts.length + 1;
       cartProducts.push({
         cartId: Date.now(),
@@ -415,12 +389,9 @@ export default Extra = props => {
         totalBadge += cartProduct.quantity;
       });
 
-      console.log('+++++', restaurant);
-
       dispatch(setCartRestaurant(restaurant));
       dispatch(setCartProducts(cartProducts));
       dispatch(setCartBadge(totalBadge));
-      // dispatch(setCartBadge(cartBadge + 1));
       dispatch(setCartToast(!cartToast));
       props.navigation.goBack();
     }
@@ -919,7 +890,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    // padding: 10,
   },
   labelText: {
     fontSize: 18,

@@ -1,9 +1,8 @@
-import React, {useState, useEffect, useRef, Fragment} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {Container, Header} from 'native-base';
+import {Header} from 'native-base';
 import {
   Platform,
-  StatusBar,
   StyleSheet,
   SafeAreaView,
   FlatList,
@@ -25,12 +24,7 @@ import {isEmpty, callOnceInInterval} from '@utils/functions';
 import {Menu, Information, Reviews} from '@components';
 import {common, colors} from '@constants/themes';
 import {RES_URL} from '@constants/configs';
-import {
-  BackWhiteIcon,
-  CartYellowIcon,
-  CartWhiteIcon,
-  CheckIcon,
-} from '@constants/svgs';
+
 import i18n from '@utils/i18n';
 
 import moment from 'moment';
@@ -59,7 +53,6 @@ export default Detail = props => {
     {key: 'third', title: i18n.translate('EVALUATION')},
   ]);
 
-  // const [restaurant, setRestaurant] = useState(props.route.params.restaurant);
   const [restaurant, setRestaurant] = useState();
   const [filterList, setFilterList] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -127,12 +120,11 @@ export default Detail = props => {
 
   useEffect(() => {
     dispatch(setLoading(true));
-    console.log(country, user.restaurantId);
+
     FoodService.getRestaurantInfo(country, user.restaurantId)
       .then(async response => {
         dispatch(setLoading(false));
         if (response.status == 200) {
-          console.log(response.result[0]);
           setRestaurant(response.result[0]);
         }
       })
@@ -168,13 +160,7 @@ export default Detail = props => {
     if (filters.withinOneHour == 1)
       tempFilters = [...tempFilters, {filter: i18n.translate('Within 1 hour')}];
     setFilterList(tempFilters);
-    // dispatch(setLoading(true));
-    console.log(
-      '--category-- country = ',
-      country,
-      '  :  restaurant id = ',
-      restaurant.restaurant_id,
-    );
+
     FoodService.categories(country, 'MFR0LE79KX')
       .then(async response => {
         if (response.status == 200) {
@@ -185,7 +171,7 @@ export default Detail = props => {
         }
       })
       .catch(error => {
-        // dispatch(setLoading(false));
+        console.log(error);
       });
     FoodService.information(country, 'MFR0LE79KX').then(response => {
       if (response.status == 200) {
@@ -195,19 +181,9 @@ export default Detail = props => {
   }, [restaurant]);
 
   useEffect(() => {
-    // dispatch(setLoading(true));
     if (category.category_id != 0) {
-      console.log(
-        '--subcategory-- country = ',
-        country,
-        '  :  restaurant id = ',
-        restaurant.restaurant_id,
-        '  :  category id = ',
-        category.category_id,
-      );
       FoodService.subCategories(country, 'MFR0LE79KX', category.category_id)
         .then(async response => {
-          // dispatch(setLoading(false));
           if (response.status == 200) {
             var data = [];
             for (var i = 0; i < response.result.length; i++) {
@@ -254,25 +230,20 @@ export default Detail = props => {
           }
         })
         .catch(error => {
-          console.log('getting subcategory - ', error);
-          // dispatch(setLoading(false));
+          console.log(error);
         });
     }
   }, [category]);
 
   useEffect(() => {
-    // dispatch(setLoading(true));
     FoodService.reviews('MFR0LE79KX', rating)
       .then(async response => {
-        // dispatch(setLoading(false));
         if (response.status == 200 && !isEmpty(response.result)) {
           setReviews(response.result[0].ratings);
           setAverage(response.result[0].AVGrating);
         }
       })
-      .catch(error => {
-        // dispatch(setLoading(false));
-      });
+      .catch(error => {});
   }, [rating]);
 
   useEffect(() => {
@@ -342,10 +313,8 @@ export default Detail = props => {
                     search={search}
                     onCategory={value => setCategory(value)}
                     onSubCategory={value => setSubCategory(value)}
-                    // onSubCategory={(value) => console.log(value)}
                     onSearch={value => {
                       setSearch(value);
-                      console.log('set search - ', value);
                     }}
                     onExtra={(product, count) =>
                       callOnceInInterval(() =>
@@ -484,8 +453,6 @@ export default Detail = props => {
             <Animated.View
               style={[styles.headerMiddle, {opacity: titleOpacity}]}>
               <View style={{height: 25}}>
-                {/* <Icon type='material' name='star-border' size={15} color={colors.YELLOW.PRIMARY} />
-                                <Text style={styles.headerRate}>{isEmpty(average) ? 0 : average}/5</Text> */}
                 <Text> </Text>
               </View>
             </Animated.View>
@@ -510,16 +477,6 @@ export default Detail = props => {
           </TouchableOpacity>
         </View>
       )}
-      {/* {visible && (
-        <TouchableOpacity
-          style={styles.toast}
-          onPress={() => setVisible(false)}>
-          <CheckIcon />
-          <Text style={styles.toastText}>
-            {i18n.translate('Product in the cart')}
-          </Text>
-        </TouchableOpacity>
-      )} */}
       {modal && (
         <View style={styles.modalContainer}>
           <View style={styles.overlay} />
@@ -550,7 +507,6 @@ export default Detail = props => {
               style={styles.modalButton}
               onPress={() => {
                 setModal(false);
-                // dispatch(setCartRestaurant(null));
                 dispatch(setCartBadge(0));
                 dispatch(setCartProducts([]));
               }}>
@@ -809,14 +765,12 @@ const styles = StyleSheet.create({
   modalView: {
     justifyContent: 'space-between',
     width: wp('70%'),
-    // height: 230,
     backgroundColor: '#1E1E1E',
     borderRadius: 14,
   },
   modalMain: {
     justifyContent: 'center',
     alignItems: 'center',
-    // height: 120
   },
   modalTitle: {
     width: '80%',

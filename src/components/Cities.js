@@ -1,9 +1,7 @@
 import React, {useState, useEffect, Fragment} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {Container} from 'native-base';
+
 import {
-  Platform,
-  StatusBar,
   StyleSheet,
   View,
   Text,
@@ -51,10 +49,6 @@ export default Cities = props => {
         });
     };
     getCities();
-
-    return () => {
-      console.log('cities will be unmount');
-    };
   }, []);
 
   return (
@@ -272,7 +266,6 @@ const styles = StyleSheet.create({
   },
   listView: {
     width: '100%',
-    // height: 250,
     paddingHorizontal: 10,
     backgroundColor: colors.WHITE,
     borderLeftWidth: 1,

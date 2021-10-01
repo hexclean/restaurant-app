@@ -1,9 +1,7 @@
-import axios from 'axios';
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
 import {
-  NAME_PATTERN,
   EMAIL_PATTERN,
   PASSWORD_PATTERN,
   ALIAS_PATTERN,
@@ -14,7 +12,6 @@ let isCalled = false,
   timer;
 
 export const callOnceInInterval = (functionTobeCalled, interval = 1500) => {
-  console.log('isCalled = ', isCalled);
   if (!isCalled) {
     isCalled = true;
     clearTimeout(timer);
@@ -28,7 +25,6 @@ export const callOnceInInterval = (functionTobeCalled, interval = 1500) => {
 export const navOptionHandler = () => ({
   headerShown: false,
   animationEnabled: true,
-  // gestureEnabled: true
 });
 
 export const validateName = value => {
@@ -88,24 +84,3 @@ export const isEmpty = param => {
     (typeof param === 'array' && param.length == 0)
   );
 };
-
-export function SendPushNotification(token, title, body, data) {
-  axios({
-    method: 'POST',
-    url: 'https://fcm.googleapis.com/fcm/send',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-    },
-    data: {
-      to: token,
-      notification: {
-        title: title,
-        body: body,
-        data: data,
-      },
-    },
-  }).then(response => {
-    console.log(response);
-  });
-}

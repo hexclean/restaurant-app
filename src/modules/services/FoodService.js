@@ -3,7 +3,6 @@ import {isEmpty} from '@utils/functions';
 
 const FoodService = {
   promotion: function (country, cityName) {
-    console.log('country - ', country, ' == cityName = ', cityName);
     return axios
       .get(`/location/promotion/${country}/${cityName}`)
       .then(response => {
@@ -23,12 +22,6 @@ const FoodService = {
     });
   },
   result: function (country, cityName, search, filters) {
-    console.log({
-      lang: country,
-      location: cityName,
-      searchString: search,
-      filters,
-    });
     return axios
       .post(`/location/home/search`, {
         lang: country,
@@ -98,14 +91,6 @@ const FoodService = {
     propertyValTransId,
     searchedProduct,
   ) {
-    console.log({
-      restaurantId,
-      lang: country,
-      subcategoryId,
-      propertyValTransId,
-      categoryId,
-      searchProduct: searchedProduct,
-    });
     return axios
       .post(`/product/subcategories-products`, {
         restaurantSecretCode: restaurantId,
@@ -150,7 +135,6 @@ const FoodService = {
   },
 
   optional: function (country, restaurantId, variantId) {
-    console.log(country, restaurantId, variantId);
     return axios
       .post(`/product/optional-extra-new`, {
         restaurantSecretCode: restaurantId,
@@ -163,7 +147,6 @@ const FoodService = {
   },
 
   sauces: function (country, restaurantId, variantId) {
-    console.log(country, restaurantId, variantId);
     return axios
       .post(`/product/sauces`, {
         restaurantSecretCode: restaurantId,
@@ -185,7 +168,7 @@ const FoodService = {
 
   getOrder: function (token, country, orderId) {
     setClientToken(token);
-    console.log('order status = ', country, orderId);
+
     return axios.get(`/order/${country}/${orderId}`).then(response => {
       removeClientToken();
       return response.data;
@@ -238,7 +221,7 @@ const FoodService = {
       })
       .then(response => {
         removeClientToken();
-        console.log(response.data);
+
         return response.data;
       });
   },
@@ -300,7 +283,7 @@ const FoodService = {
       })
       .then(response => {
         !isEmpty(token) && removeClientToken(token);
-        console.log(response.data);
+
         return response.data;
       });
   },
@@ -327,22 +310,8 @@ const FoodService = {
       })
       .then(response => {
         !isEmpty(token) && removeClientToken(token);
-        // console.log(response.data);
-        return response.data;
-        // let data = {
-        //     "status": 200,
-        //     "msg": "Available",
-        //     "result": [{
-        //         "id": 1,
-        //         "active": 1,
-        //         "couponName": "RED10",
-        //         "restaurantId": 1,
-        //         "type": 2,
-        //         "value": 3.5
-        //     }]
-        // };
 
-        // return data;
+        return response.data;
       });
   },
   getPromotionHeader: function (country, locationId) {

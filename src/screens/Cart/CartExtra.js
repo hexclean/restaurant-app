@@ -1,16 +1,14 @@
 import React, {useState, useEffect, Fragment, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {Container, Content, Header} from 'native-base';
+import {Header} from 'native-base';
 import {
   Platform,
-  StatusBar,
   StyleSheet,
   FlatList,
   View,
   Text,
   TouchableOpacity,
   Animated,
-  Image,
   SafeAreaView,
 } from 'react-native';
 import {
@@ -30,7 +28,6 @@ import {isEmpty} from '@utils/functions';
 import {common, colors} from '@constants/themes';
 import {RES_URL} from '@constants/configs';
 import i18n from '@utils/i18n';
-import moment from 'moment';
 import {TextField} from 'react-native-material-textfield';
 
 const HEADER_MAX_HEIGHT = Platform.OS === 'ios' ? 300 : 260;
@@ -59,11 +56,6 @@ const Required = ({required, index, quantity, onSelect}) => {
             color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
           />
           <Text style={{fontSize: 16}}>{required.extra_name}</Text>
-          {/* {!isEmpty(required.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {required.allergens_name.map((allergen, key) => (
-                            <Text key={`allergen${key}`} style={styles.allergen}>{allergen.allergen}{key != required.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
         </View>
         <Text style={styles.price}>
           {(required.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
@@ -93,11 +85,6 @@ const Optional = ({optional, index, quantity, onSelect}) => {
             color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
           />
           <Text style={{fontSize: 16}}>{optional.extra_name}</Text>
-          {/* {!isEmpty(optional.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
-                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
         </View>
         <Text style={styles.price}>
           {(optional.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
@@ -127,11 +114,6 @@ const Sauce = ({sauce, index, quantity, onSelect}) => {
             color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
           />
           <Text style={{fontSize: 16}}>{sauce.extra_name}</Text>
-          {/* {!isEmpty(optional.allergens_name) ? (
-                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
-                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
-                        ))})</Text>
-                    ) : null} */}
         </View>
         <Text style={styles.price}>
           {(sauce.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
@@ -144,9 +126,7 @@ const Sauce = ({sauce, index, quantity, onSelect}) => {
 export default CartExtra = props => {
   const dispatch = useDispatch();
   const {country} = useSelector(state => state.auth);
-  const {cartRestaurant, cartProducts, cartBadge, cartToast} = useSelector(
-    state => state.food,
-  );
+  const {cartProducts, cartToast} = useSelector(state => state.food);
 
   const [restaurant] = useState(props.route.params.restaurant);
   const [product] = useState(props.route.params.product);
@@ -185,7 +165,6 @@ export default CartExtra = props => {
   });
 
   useEffect(() => {
-    console.log(product);
     const getRequired = () => {
       dispatch(setLoading(true));
       FoodService.required(
@@ -194,15 +173,9 @@ export default CartExtra = props => {
         product.variant_id,
       )
         .then(response => {
-          // dispatch(setLoading(false));
           if (response.status == 200) {
             setMinRequired(response.minRequired);
             setRequireds(response.result);
-            console.log(
-              'requireds length - ',
-              response.result.length,
-              response.result,
-            );
 
             if (response.result.length <= 5) setRequiredsAll(response.result);
             else {
@@ -332,8 +305,6 @@ export default CartExtra = props => {
       } else {
         setRequiredList(requiredResult);
       }
-
-      console.log(requiredList.length, '  : minRequired = ', minRequired);
     } else if (type == 2) {
       var optionalResult = optionalList.filter(optional => {
         return optional.extra_id != item.extra_id;
@@ -407,7 +378,7 @@ export default CartExtra = props => {
           type: 'opt',
         });
       });
-      console.log(extras);
+
       var counter = cartProducts.length + 1;
       cartProducts.push({
         cartId: Date.now(),
@@ -428,12 +399,10 @@ export default CartExtra = props => {
         totalBadge += cartProduct.quantity;
       });
 
-      console.log('+++++', restaurant);
-
       dispatch(setCartRestaurant(restaurant));
       dispatch(setCartProducts(cartProducts));
       dispatch(setCartBadge(totalBadge));
-      // dispatch(setCartBadge(cartBadge + 1));
+
       dispatch(setCartToast(!cartToast));
       props.navigation.goBack();
     }
@@ -932,7 +901,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    // padding: 10,
   },
   labelText: {
     fontSize: 18,

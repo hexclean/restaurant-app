@@ -1,7 +1,6 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-// import { createLogger } from 'redux-logger';
+import {createStore, combineReducers, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
-import { persistStore, persistReducer } from 'redux-persist';
+import {persistStore, persistReducer} from 'redux-persist';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import authReducer from './reducers/auth';
@@ -19,7 +18,7 @@ const peresistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   food: foodReducer,
-  profile: profileReducer
+  profile: profileReducer,
 });
 
 const persistedReducer = persistReducer(peresistConfig, rootReducer);
@@ -28,4 +27,4 @@ const store = createStore(persistedReducer, applyMiddleware(thunk));
 
 let persistor = persistStore(store);
 
-export { store, persistor };
+export {store, persistor};
