@@ -465,7 +465,6 @@ export default Detail = props => {
           <View style={common.headerLeft}>
             <TouchableOpacity
               onPress={() => {
-                // setCityStatus(false);
                 props.navigation.openDrawer();
               }}>
               <Icon

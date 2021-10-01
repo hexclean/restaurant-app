@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#A42826',
+    color: '#F78F1E',
   },
   modalContainer: {
     position: 'absolute',
