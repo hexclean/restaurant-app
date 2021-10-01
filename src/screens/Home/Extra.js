@@ -36,6 +36,7 @@ import {TextField} from 'react-native-material-textfield';
 const HEADER_MAX_HEIGHT = Platform.OS === 'ios' ? 300 : 260;
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 110 : 60;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
+
 const BOTTOM_BUTTON_DISTANCE = Platform.OS === 'ios' ? 40 : 26;
 
 const Required = ({required, index, quantity, onSelect}) => {
@@ -106,6 +107,40 @@ const Optional = ({optional, index, quantity, onSelect}) => {
   );
 };
 
+const Sauce = ({sauce, index, quantity, onSelect}) => {
+  const [check, setCheck] = useState(false);
+
+  return (
+    <Fragment>
+      <TouchableOpacity
+        key={index}
+        style={styles.items}
+        onPress={() => {
+          setCheck(!check);
+          onSelect(!check, sauce, quantity);
+        }}>
+        <View style={styles.check}>
+          <Icon
+            type="material-community"
+            name={check ? 'check-box-outline' : 'checkbox-blank-outline'}
+            size={25}
+            color={check ? colors.YELLOW.PRIMARY : colors.GREY.PRIMARY}
+          />
+          <Text style={{fontSize: 16}}>{sauce.extra_name}</Text>
+          {/* {!isEmpty(optional.allergens_name) ? (
+                        <Text style={styles.allergenList}>({i18n.translate('Allergens')}: {optional.allergens_name.map((allergen, key) => (
+                            <Text key={`allergensop${key}`} style={styles.allergen}>{allergen.allergen}{key != optional.allergens_name.length - 1 ? ', ' : ''}</Text>
+                        ))})</Text>
+                    ) : null} */}
+        </View>
+        <Text style={styles.price}>
+          {(sauce.extra_price * quantity).toFixed(2)} {i18n.translate('lei')}
+        </Text>
+      </TouchableOpacity>
+    </Fragment>
+  );
+};
+
 export default Extra = props => {
   const dispatch = useDispatch();
   const {country} = useSelector(state => state.auth);
@@ -125,6 +160,10 @@ export default Extra = props => {
   const [optionalList, setOptionalList] = useState([]);
   const [optionalsAll, setOptionalsAll] = useState([]);
   const [isShowOptionals, setIsShowOptionals] = useState(false);
+  const [sauces, setSauces] = useState([]);
+  const [sauceList, setSauceList] = useState([]);
+  const [saucesAll, setSaucesAll] = useState([]);
+  const [isShowSauces, setIsShowSauces] = useState(false);
   const [comment, setComment] = useState('');
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -193,6 +232,29 @@ export default Extra = props => {
         });
     };
     getOptional();
+
+    const getSauce = () => {
+      FoodService.sauces(country, 'MFR0LE79KX', product.variant_id)
+        .then(response => {
+          dispatch(setLoading(false));
+          if (response.status == 200) {
+            setSauces(response.result);
+
+            if (response.result.length <= 5) setSaucesAll(response.result);
+            else {
+              let tmp = [];
+              for (var i = 0; i < 5; i++) {
+                tmp.push(response.result[i]);
+              }
+              setSaucesAll(tmp);
+            }
+          }
+        })
+        .catch(error => {
+          dispatch(setLoading(false));
+        });
+    };
+    getSauce();
   }, []);
 
   useEffect(() => {
@@ -221,7 +283,20 @@ export default Extra = props => {
         setOptionalsAll(tmp);
       }
     }
-  }, [isShowRequireds, isShowOptionals]);
+
+    if (isShowSauces) {
+      setSaucesAll(sauces);
+    } else {
+      if (sauces.length <= 5) setSaucesAll(sauces);
+      else {
+        let tmp = [];
+        for (var i = 0; i < 5; i++) {
+          tmp.push(sauces[i]);
+        }
+        setSaucesAll(tmp);
+      }
+    }
+  }, [isShowRequireds, isShowOptionals, isShowSauces]);
 
   const onSelect = (type, check, item, count) => {
     if (type == 1) {
@@ -246,7 +321,7 @@ export default Extra = props => {
       }
 
       console.log(requiredList.length, '  : minRequired = ', minRequired);
-    } else {
+    } else if (type == 2) {
       var optionalResult = optionalList.filter(optional => {
         return optional.extra_id != item.extra_id;
       });
@@ -265,6 +340,26 @@ export default Extra = props => {
         ]);
       } else {
         setOptionalList(optionalResult);
+      }
+    } else if (type == 3) {
+      var sauceResult = sauceList.filter(sauce => {
+        return sauce.extra_id != item.extra_id;
+      });
+      if (check) {
+        setSauceList([
+          ...sauceResult,
+          {
+            extra_id: item.extra_id,
+            extra_name: item.extra_name,
+            extra_minQuantity: count,
+            extra_price: item.extra_price,
+            extra_maxQuantity: item.extra_maxQuantity,
+            allergens_name: item.allergens_name,
+            extra_dash: count,
+          },
+        ]);
+      } else {
+        setSauceList(sauceResult);
       }
     }
   };
@@ -287,6 +382,15 @@ export default Extra = props => {
           quantity: quantity,
           extraName: optional.extra_name,
           extraPrice: optional.extra_price,
+          type: 'opt',
+        });
+      });
+      sauceList.map((sauce, key) => {
+        extras.push({
+          id: sauce.extra_id,
+          quantity: quantity,
+          extraName: sauce.extra_name,
+          extraPrice: sauce.extra_price,
           type: 'opt',
         });
       });
@@ -447,6 +551,53 @@ export default Extra = props => {
               <TouchableOpacity
                 style={styles.showHideExtras}
                 onPress={() => setIsShowOptionals(false)}>
+                <Text style={styles.showHideExtrasText}>
+                  {i18n.translate('HIDE')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          {!isEmpty(saucesAll) && (
+            <Text
+              style={{
+                marginTop: 20,
+                marginBottom: 20,
+                fontSize: 18,
+                fontWeight: 'bold',
+              }}
+              numberOfLines={1}>
+              {i18n.translate('Sauce extras (Not required)')}
+            </Text>
+          )}
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={saucesAll}
+            keyExtractor={(sauce, index) => index.toString()}
+            renderItem={(sauce, index) => (
+              <Sauce
+                sauce={sauce.item}
+                index={index}
+                sauceList={sauceList}
+                quantity={quantity}
+                onSelect={(check, sauce, count) =>
+                  onSelect(3, check, sauce, count)
+                }
+              />
+            )}
+          />
+          {!isEmpty(saucesAll) &&
+            sauces.length > 5 &&
+            (!isShowSauces ? (
+              <TouchableOpacity
+                style={styles.showHideExtras}
+                onPress={() => setIsShowSauces(true)}>
+                <Text style={styles.showHideExtrasText}>
+                  {i18n.translate('SHOW MORE')}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.showHideExtras}
+                onPress={() => setIsShowSauces(false)}>
                 <Text style={styles.showHideExtrasText}>
                   {i18n.translate('HIDE')}
                 </Text>

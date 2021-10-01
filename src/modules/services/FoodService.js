@@ -40,6 +40,26 @@ const FoodService = {
         return response.data;
       });
   },
+  getPromotionHeader: function (country, locationId) {
+    return axios
+      .post('/promotion/header', {
+        locationId: locationId,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+  getDailyMenu: function (country, locationId) {
+    return axios
+      .post('/product/daily-menu', {
+        locationId: locationId,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
 
   getRestaurantInfo: function (country, restaurantId) {
     return axios
@@ -132,7 +152,20 @@ const FoodService = {
   optional: function (country, restaurantId, variantId) {
     console.log(country, restaurantId, variantId);
     return axios
-      .post(`/product/optional-extra`, {
+      .post(`/product/optional-extra-new`, {
+        restaurantSecretCode: restaurantId,
+        lang: country,
+        variantId,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+
+  sauces: function (country, restaurantId, variantId) {
+    console.log(country, restaurantId, variantId);
+    return axios
+      .post(`/product/sauces`, {
         restaurantSecretCode: restaurantId,
         lang: country,
         variantId,

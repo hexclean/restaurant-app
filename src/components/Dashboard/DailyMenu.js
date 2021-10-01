@@ -87,37 +87,41 @@ const RenderItem = ({
             </Text>
           </View>
         )}
-        <View style={styles.dailyMenuContent}>
-          <Text style={styles.product_description}>
-            {dailyMenu.item.product_description}
-          </Text>
-          {!isEmpty(dailyMenu.item.startTime) &&
-            !isEmpty(dailyMenu.item.endTime) && (
-              <Text style={styles.dailyOpenCloseTime} numberOfLines={1}>
-                <Text style={styles.dailyOpenCloseTimeTitle}>
-                  {i18n.translate('Order time')}
-                </Text>
-                {': '}
-                {dailyMenu.item.startTime}-{dailyMenu.item.endTime}
-              </Text>
-            )}
-          <Text style={styles.product_price}>
-            {dailyMenu.item.product_price} {i18n.translate('lei')}
-          </Text>
-
-          <View style={styles.restaurant_profile_name}>
-            {dailyMenu.item.restaurant_profileImage != null && (
-              <FastImage
-                style={styles.restaurant_profileImage}
-                source={{uri: RES_URL + dailyMenu.item.restaurant_profileImage}}
-                onLoadEnd={e => setLoader(false)}
-              />
-            )}
-            <Text style={styles.restaurant_name}>
-              {dailyMenu.item.restaurant_name}
+        {!loader && (
+          <View style={styles.dailyMenuContent}>
+            <Text style={styles.product_description}>
+              {dailyMenu.item.product_description}
             </Text>
+            {!isEmpty(dailyMenu.item.startTime) &&
+              !isEmpty(dailyMenu.item.endTime) && (
+                <Text style={styles.dailyOpenCloseTime} numberOfLines={1}>
+                  <Text style={styles.dailyOpenCloseTimeTitle}>
+                    {i18n.translate('Order time')}
+                  </Text>
+                  {': '}
+                  {dailyMenu.item.startTime}-{dailyMenu.item.endTime}
+                </Text>
+              )}
+            <Text style={styles.product_price}>
+              {dailyMenu.item.product_price} {i18n.translate('lei')}
+            </Text>
+
+            <View style={styles.restaurant_profile_name}>
+              {dailyMenu.item.restaurant_profileImage != null && (
+                <FastImage
+                  style={styles.restaurant_profileImage}
+                  source={{
+                    uri: RES_URL + dailyMenu.item.restaurant_profileImage,
+                  }}
+                  onLoadEnd={e => setLoader(false)}
+                />
+              )}
+              <Text style={styles.restaurant_name}>
+                {dailyMenu.item.restaurant_name}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
       </TouchableOpacity>
     </Fragment>
   );

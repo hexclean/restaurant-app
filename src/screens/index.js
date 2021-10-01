@@ -29,6 +29,7 @@ import DailyMenuExtra from '@screens/Home/DailyMenuExtra';
 import CartIndex from '@screens/Cart/CartIndex';
 import CartDetail from '@screens/Cart/CartDetail';
 import CartExtra from '@screens/Cart/CartExtra';
+import CartDeliveryAdd from '@screens/Cart/CartDeliveryAdd';
 
 import OrderIndex from '@screens/Order/OrderIndex';
 import OrderDetail from '@screens/Order/OrderDetail';
@@ -65,4 +66,5 @@ export {
   OrderSuccess,
   CartExtra,
   DailyMenuExtra,
+  CartDeliveryAdd,
 };
