@@ -192,6 +192,15 @@ export default CartIndex = props => {
   const [visibleNotiMinus, setVisibleNotiMinus] = useState(0);
   const [isExtra, setIsExtra] = useState(0);
   const [upSellProducts, setUpSellProducts] = useState([]);
+  const [navi, setNavi] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      console.log('order detail focus ---- ');
+      setNavi(true);
+    });
+    return unsubscribe;
+  }, [props.navigation]);
 
   useEffect(() => {
     var totalAmount = 0;
@@ -205,6 +214,16 @@ export default CartIndex = props => {
     });
     setTotal(totalAmount);
   });
+
+  useEffect(() => {
+    if (isEmpty(cartProducts) && navi) {
+      console.log('cart screen empty cartproducts === ', navi);
+      setNavi(false);
+      setTimeout(() => {
+        props.navigation.goBack(null);
+      }, 50);
+    }
+  }, [cartProducts, navi]);
 
   const onDelete = (check, item, count) => {
     setType(false);
@@ -231,6 +250,17 @@ export default CartIndex = props => {
       dispatch(setCartBadge(totalBadge));
       dispatch(setCartProducts(cartProducts));
 
+      var totalAmount = 0;
+      cartProducts.map((cartProduct, key) => {
+        totalAmount += cartProduct.quantity * cartProduct.productPrice;
+        if (cartProduct.boxPrice)
+          totalAmount += cartProduct.quantity * cartProduct.boxPrice;
+        cartProduct.extras.map((extra, key) => {
+          totalAmount += extra.quantity * extra.extraPrice;
+        });
+      });
+      setTotal(totalAmount);
+
       if (cartProducts[index].extras.length != 0) setIsExtra(1);
       else setIsExtra(0);
 
@@ -252,7 +282,13 @@ export default CartIndex = props => {
       dispatch(setCartBadge(totalBadge));
       dispatch(setCartProducts(result));
       // dispatch(setCartBadge(cartBadge - 1));
-      if (isEmpty(result)) props.navigation.goBack();
+      if (isEmpty(result)) {
+        console.log('cart screen empty cart ');
+        setNavi(false);
+        setTimeout(() => {
+          props.navigation.goBack(null);
+        }, 300);
+      }
     }
     setVisible(false);
   };
@@ -261,7 +297,7 @@ export default CartIndex = props => {
     dispatch(setCartBadge(0));
     dispatch(setCartProducts([]));
     setVisible(false);
-
+    setNavi(false);
     props.navigation.goBack();
   };
 
@@ -294,7 +330,7 @@ export default CartIndex = props => {
     //     dispatch(setLoading(false));
     //     setUpSellProducts([]);
     //   });
-  }, []);
+  }, [cartRestaurant]);
 
   const onSelectUpSellProduct = item => {
     console.log(item);
@@ -326,6 +362,7 @@ export default CartIndex = props => {
     // }
     // else if (item.modal == 1) //go to extra
     // {
+    setNavi(false);
     props.navigation.push('CartExtra', {
       restaurant: cartRestaurant,
       product: item,
@@ -339,7 +376,11 @@ export default CartIndex = props => {
       {/* <StatusBar /> */}
       <Header style={common.header}>
         <View style={common.headerLeft}>
-          <TouchableOpacity onPress={() => props.navigation.goBack()}>
+          <TouchableOpacity
+            onPress={() => {
+              setNavi(false);
+              props.navigation.goBack();
+            }}>
             <Icon
               type="material"
               name="arrow-back"
@@ -394,6 +435,25 @@ export default CartIndex = props => {
             </Text>
           </View>
         )}
+        {!isEmpty(upSellProducts) && (
+          <Fragment>
+            <Text style={styles.upsellproduct_title}>
+              {i18n.translate('Popular choices for your order')}
+            </Text>
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              horizontal={true}
+              data={upSellProducts}
+              keyExtractor={(upSellProduct, index) => index.toString()}
+              renderItem={(upSellProduct, index) => (
+                <UpSellProductItem
+                  upSellProduct={upSellProduct.item}
+                  onSelectUpSellProduct={item => onSelectUpSellProduct(item)}
+                />
+              )}
+            />
+          </Fragment>
+        )}
         {!isEmpty(cartProducts) && (
           <Fragment>
             <FlatList
@@ -415,25 +475,6 @@ export default CartIndex = props => {
             />
           </Fragment>
         )}
-        {!isEmpty(upSellProducts) && (
-          <Fragment>
-            <Text style={styles.upsellproduct_title}>
-              {i18n.translate('Popular choices for your order')}
-            </Text>
-            <FlatList
-              showsHorizontalScrollIndicator={false}
-              horizontal={true}
-              data={upSellProducts}
-              keyExtractor={(upSellProduct, index) => index.toString()}
-              renderItem={(upSellProduct, index) => (
-                <UpSellProductItem
-                  upSellProduct={upSellProduct.item}
-                  onSelectUpSellProduct={item => onSelectUpSellProduct(item)}
-                />
-              )}
-            />
-          </Fragment>
-        )}
         <View style={styles.cartItemtContentBottom}></View>
       </Content>
       <View style={styles.goToOrder}>
@@ -449,6 +490,7 @@ export default CartIndex = props => {
             disabled={disabled}
             onPress={() => {
               setDisabled(true);
+              setNavi(false);
               props.navigation.push('CartDetail');
               setTimeout(() => setDisabled(false), 1000);
             }}>
@@ -518,7 +560,9 @@ const styles = StyleSheet.create({
   },
   cartItemContent: {
     flex: 1,
-    padding: 20,
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   cartItemtContentBottom: {
     height: 160,
@@ -544,7 +588,7 @@ const styles = StyleSheet.create({
     width: '100%',
     // height: 30,
     marginTop: 15,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   cartText: {
     width: '70%',
@@ -564,7 +608,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   extraList: {
-    marginTop: 15,
+    marginTop: 5,
     width: '100%',
     fontSize: 16,
     color: colors.BLACK,
@@ -574,12 +618,12 @@ const styles = StyleSheet.create({
     color: colors.BLACK,
   },
   cartBottom: {
-    marginTop: 10,
+    marginTop: 7,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    height: 50,
+    // height: 50,
   },
   cartLeft: {
     alignItems: 'flex-start',
@@ -794,7 +838,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     lineHeight: 24,
-    marginTop: 12,
+    marginTop: 5,
     marginBottom: 8,
   },
   product: {
@@ -802,7 +846,9 @@ const styles = StyleSheet.create({
     width: wp('80%') - 40,
     marginRight: 10,
     borderRadius: 6,
-    shadowColor: 'rgba(1, 1, 1, 0.6)',
+    borderWidth: 1,
+    borderColor: colors.WHITE,
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
     shadowOffset: {width: 4, height: 4},
     shadowOpacity: Platform.OS === 'ios' ? 0.5 : 0.7,
     shadowRadius: 5,
@@ -834,8 +880,8 @@ const styles = StyleSheet.create({
     height: '100%',
     borderTopLeftRadius: 6,
     borderBottomLeftRadius: 6,
-    borderRightWidth: 1,
-    borderRightColor: '#C4C4C4',
+    // borderRightWidth: 1,
+    // borderRightColor: '#C4C4C4',
     marginRight: 8,
   },
   productTitle: {

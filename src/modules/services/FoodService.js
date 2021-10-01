@@ -271,6 +271,19 @@ const FoodService = {
         return response.data;
       });
   },
+  getDownSellProducts: function (restaurant_id, country) {
+    return axios
+      .post('/product/downsell', {
+        restaurantId: restaurant_id,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
+      })
+      .catch(error => {
+        return {};
+      });
+  },
   setCouponCodeHandle: function (token, restaurantId, couponCode) {
     !isEmpty(token) && setClientToken(token);
 
@@ -297,6 +310,26 @@ const FoodService = {
         // };
 
         // return data;
+      });
+  },
+  getPromotionHeader: function (country, locationId) {
+    return axios
+      .post('/promotion/header', {
+        locationId: locationId,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
+      });
+  },
+  getDailyMenu: function (country, locationId) {
+    return axios
+      .post('/product/daily-menu', {
+        locationId: locationId,
+        lang: country,
+      })
+      .then(response => {
+        return response.data;
       });
   },
   getUpSellProducts: function (restaurant_id, country) {

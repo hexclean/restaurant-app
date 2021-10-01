@@ -25,7 +25,7 @@ import ReviewList from '@screens/Review/ReviewList';
 import ReviewAdd from '@screens/Review/ReviewAdd';
 import ReviewDelete from '@screens/Review/ReviewDelete';
 import CouponCodes from '@screens/Profile/CouponCodes';
-
+import DailyMenuExtra from '@screens/Home/DailyMenuExtra';
 import CartIndex from '@screens/Cart/CartIndex';
 import CartDetail from '@screens/Cart/CartDetail';
 import CartExtra from '@screens/Cart/CartExtra';
@@ -64,4 +64,5 @@ export {
   OrderDetail,
   OrderSuccess,
   CartExtra,
+  DailyMenuExtra,
 };

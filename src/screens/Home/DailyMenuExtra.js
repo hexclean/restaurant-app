@@ -107,16 +107,16 @@ const Optional = ({optional, index, quantity, onSelect}) => {
   );
 };
 
-export default Extra = props => {
+export default DailyMenuExtra = props => {
   const dispatch = useDispatch();
   const {country} = useSelector(state => state.auth);
   const {cartRestaurant, cartProducts, cartBadge, cartToast} = useSelector(
     state => state.food,
   );
 
-  const [restaurant] = useState(props.route.params.restaurant);
-  const [product] = useState(props.route.params.product);
-  const [quantity, setQuantity] = useState(props.route.params.count);
+  // const [restaurant] = useState(props.route.params.restaurant);
+  const [product] = useState(props.route.params.item);
+  const [quantity, setQuantity] = useState(1);
   const [minRequired, setMinRequired] = useState(0);
   const [requireds, setRequireds] = useState([]);
   const [requiredList, setRequiredList] = useState([]);
@@ -150,11 +150,7 @@ export default Extra = props => {
     console.log(product);
     const getRequired = () => {
       dispatch(setLoading(true));
-      FoodService.required(
-        country,
-        restaurant.restaurant_id,
-        product.variant_id,
-      )
+      FoodService.required(country, product.restaurant_id, product.variant_id)
         .then(response => {
           // dispatch(setLoading(false));
           if (response.status == 200) {
@@ -183,11 +179,7 @@ export default Extra = props => {
     getRequired();
 
     const getOptional = () => {
-      FoodService.optional(
-        country,
-        restaurant.restaurant_id,
-        product.variant_id,
-      )
+      FoodService.optional(country, product.restaurant_id, product.variant_id)
         .then(response => {
           dispatch(setLoading(false));
           if (response.status == 200) {
@@ -326,9 +318,19 @@ export default Extra = props => {
         totalBadge += cartProduct.quantity;
       });
 
-      console.log('+++++', restaurant);
+      console.log('+++++', product);
 
-      dispatch(setCartRestaurant(restaurant));
+      dispatch(
+        setCartRestaurant({
+          restaurant_id: product.restaurant_id,
+          restaurant_name: product.restaurant_name,
+          restaurant_open: product.restaurant_open,
+          restaurant_close: product.restaurant_close,
+          restaurant_profileImage: product.restaurant_profileImage,
+          restaurant_coverImage: product.restaurant_coverImage,
+          card: product.card,
+        }),
+      );
       dispatch(setCartProducts(cartProducts));
       dispatch(setCartBadge(totalBadge));
       // dispatch(setCartBadge(cartBadge + 1));

@@ -1,4 +1,3 @@
-
 import Loading from './Athena/Loading';
 import Picker from './Athena/Picker';
 import Card from './Athena/Card';
@@ -9,25 +8,24 @@ import Featured from './Dashboard/Featured';
 import Trendy from './Dashboard/Trendy';
 import Result from './Dashboard/Result';
 import Filters from './Dashboard/Filters';
-
+import DailyMenu from './Dashboard/DailyMenu';
 import Menu from './Restaurant/Menu';
 import Information from './Restaurant/Information';
 import Reviews from './Restaurant/Reviews';
 
-
 export {
-    Loading,
-    Picker,
-    Card,
-    Splash,
-    Cities,
-    Dashboard,
-    Featured,
-    Trendy,
-    Result,
-    Filters,
-    
-    Menu,
-    Information,
-    Reviews
+  Loading,
+  Picker,
+  Card,
+  Splash,
+  Cities,
+  Dashboard,
+  Featured,
+  Trendy,
+  Result,
+  Filters,
+  Menu,
+  Information,
+  Reviews,
+  DailyMenu,
 };
